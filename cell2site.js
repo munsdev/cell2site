@@ -1,5 +1,5 @@
 /**
- * cell2site.js  v1.2.0
+ * cell2site.js  v1.2.1
  * Cell2 — Google Sheets → Webflow CMS Lists, Tabs & Leaflet Map
  * https://cell2.site
  *
@@ -768,6 +768,41 @@
     activate(activeIndex);
   }
 
+  // ─── TAB FIELD POPULATION ────────────────────────────────────────────────────
+  // Fills elements in tab link/pane templates from the tab's _config row.
+  //   data-cell2-tab-field="Col"           → textContent from config column
+  //   data-cell2-tab-field-html="Col"      → innerHTML from config column
+  //   data-cell2-tab-field-attr="attr:Col" → attribute from config column (e.g. src:Image)
+
+  function populateTabFields(rootEl, tabDef) {
+    var row = (tabDef && tabDef._row) ? tabDef._row : {};
+
+    rootEl.querySelectorAll('[data-cell2-tab-field]').forEach(function (el) {
+      var col = el.getAttribute('data-cell2-tab-field');
+      var val = col && row[col] !== undefined ? row[col] : '';
+      if (val) el.textContent = val;
+      else removeWrapperOrClear(el, rootEl, function () { el.textContent = ''; });
+    });
+
+    rootEl.querySelectorAll('[data-cell2-tab-field-html]').forEach(function (el) {
+      var col = el.getAttribute('data-cell2-tab-field-html');
+      var val = col && row[col] !== undefined ? row[col] : '';
+      if (val) el.innerHTML = val;
+      else removeWrapperOrClear(el, rootEl, function () { el.innerHTML = ''; });
+    });
+
+    rootEl.querySelectorAll('[data-cell2-tab-field-attr]').forEach(function (el) {
+      var spec = el.getAttribute('data-cell2-tab-field-attr');
+      var idx  = spec.indexOf(':');
+      if (idx === -1) return;
+      var attr = spec.slice(0, idx).trim();
+      var col  = spec.slice(idx + 1).trim();
+      var val  = col && row[col] !== undefined ? row[col] : '';
+      if (val) el.setAttribute(attr, val);
+      else removeWrapperOrClear(el, rootEl, function () { el.removeAttribute(attr); });
+    });
+  }
+
   function insertTab(tabDef, records, ctx) {
     var tabId = uid();
     var label = tabDef.label || tabDef.tab;
@@ -787,6 +822,7 @@
       if (meta === 'tab-description') el.textContent = tabDef.description || '';
     });
     link.querySelectorAll('[data-cell2-tab-count]').forEach(function (el) { el.textContent = records.length; });
+    populateTabFields(link, tabDef);
 
     if (link.hasAttribute('data-cell2-var')) resolveVars(link, null, tabDef, ctx.globalVars);
     link.querySelectorAll('[data-cell2-var]').forEach(function (el) {
@@ -810,6 +846,7 @@
       if (meta === 'tab-label')       el.textContent = label;
       if (meta === 'tab-description') el.textContent = tabDef.description || '';
     });
+    populateTabFields(pane, tabDef);
 
     if (pane.hasAttribute('data-cell2-var')) resolveVars(pane, null, tabDef, ctx.globalVars);
     pane.querySelectorAll('[data-cell2-var]').forEach(function (el) {
