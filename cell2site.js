@@ -12,7 +12,7 @@
  * CMS — QUICK START
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * 1. Publish your sheet:  File → Share → Publish to web → entire doc → CSV
+ * 1. Share your sheet:  click Share → set access to "Anyone with the link" → Viewer
  * 2. Mark up a list:
  *      <div data-cell2-list data-cell2-id="SHEET_ID" data-cell2-sheet="Tab Name">
  *        <div data-cell2-item>
@@ -185,7 +185,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * NOTES
  * ═══════════════════════════════════════════════════════════════════════════
- *  • Sheet must be published to the web (CSV)
+ *  • Sheet must be shared: "Anyone with the link" → Viewer (no publishing required)
  *  • Column names are case-sensitive, must match the header row exactly
  *  • All-blank rows are skipped
  *  • Lat/lng must be decimals; invalid rows are skipped by the map
