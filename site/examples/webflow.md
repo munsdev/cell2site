@@ -14,7 +14,7 @@ Custom code needs a paid Site plan.
 - One page only: **Page settings, Custom code, Before `</body>` tag**.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.1/cell2site.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.2/cell2site.js"></script>
 ```
 
 Publish after saving.

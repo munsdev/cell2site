@@ -265,3 +265,21 @@ test('map: carto tile names fall back to keyless tiles', async () => {
   assert.match(src, /arcgisonline\.com\/.*World_Light_Gray_Base/);
   assert.doesNotMatch(src, /cartocdn/);
 });
+
+test('map: popups keep a readable width and stay inside the map, phone or desktop', async () => {
+  const sheet = csv([['Name', 'Description', 'Latitude', 'Longitude'],
+    ['Oodi', 'Helsinki\'s central library: books, 3D printers and recording studios.', '60.17', '24.94']]);
+  for (const width of [340, 900]) {
+    const { page } = await h.open(`<div style="width:${width}px" data-cell2-embed="map" data-cell2-id="SHEET"></div>`, { Sheet1: sheet });
+    await page.waitForSelector('.cell2site-map-marker');
+    await page.click('.cell2site-map-marker');
+    const content = await page.waitForSelector('.leaflet-popup-content');
+    await page.waitForTimeout(300);   // the popup auto-pans into view
+    const [popup, map] = await page.evaluate(() => [
+      document.querySelector('.leaflet-popup-content-wrapper').getBoundingClientRect().toJSON(),
+      document.querySelector('[data-cell2-map]').getBoundingClientRect().toJSON()]);
+    assert.ok(popup.width >= Math.min(240, width - 90), `popup ${popup.width}px wide in a ${width}px map`);
+    assert.ok(popup.left >= map.left && popup.right <= map.right, `popup overflows a ${width}px map`);
+    assert.ok(await content.isVisible());
+  }
+});

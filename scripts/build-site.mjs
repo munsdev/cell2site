@@ -3,6 +3,7 @@
 // hundred KB, and asset uploads need a second, short-lived token that some CI proxies strip.
 import { readFileSync, readdirSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative, extname } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const root = new URL('..', import.meta.url).pathname;
 const siteDir = join(root, 'site');
@@ -19,8 +20,14 @@ const files = {};
 })(siteDir);
 files['/cell2site.js'] = join(root, 'cell2site.js');   // always the library on this commit
 
-const site = Object.fromEntries(Object.entries(files).map(([url, path]) =>
-  [url, [TYPES[extname(path)] || 'application/octet-stream', readFileSync(path, 'utf8')]]));
+// Pages reference the library as cell2site.js?v=<hash>: a browser holding a cached copy from the
+// previous deploy otherwise pairs a new page with an old script, which looks like a fresh bug.
+const libHash = createHash('sha256').update(readFileSync(files['/cell2site.js'])).digest('hex').slice(0, 10);
+const site = Object.fromEntries(Object.entries(files).map(([url, path]) => {
+  let body = readFileSync(path, 'utf8');
+  if (path.endsWith('.html')) body = body.replace(/(src="(?:\.\.\/|\/)cell2site\.js)"/g, '$1?v=' + libHash + '"');
+  return [url, [TYPES[extname(path)] || 'application/octet-stream', body]];
+}));
 
 // _redirects: "from to [status]" per line, # comments.
 const redirects = Object.fromEntries(readFileSync(join(siteDir, '_redirects'), 'utf8').split('\n')
@@ -50,10 +57,11 @@ export default {
     else if (!SITE[path] && SITE[path + '/index.html']) return Response.redirect(url.origin + path + '/' + url.search, 301);
     const file = SITE[path] || SITE[path + '.html'];
     const [type, body] = file || SITE['/404.html'];
-    // The library and HTML change on every deploy; let browsers revalidate rather than guess.
     return new Response(request.method === 'HEAD' ? null : body, {
       status: file ? 200 : 404,
-      headers: Object.assign({ 'content-type': type, 'cache-control': 'public, max-age=300' }, SECURITY),
+      // Versioned script URLs are immutable; everything else revalidates so a deploy shows at once.
+      headers: Object.assign({ 'content-type': type,
+        'cache-control': url.searchParams.has('v') ? 'public, max-age=31536000, immutable' : 'no-cache' }, SECURITY),
     });
   },
 };
