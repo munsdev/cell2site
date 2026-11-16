@@ -2,6 +2,13 @@
 
 Semantic versioning. Tags: `1.2.0` (no `v`), `v1.2.1`, then `v1.3.0` onward.
 
+## v1.3.1
+
+### Fixed
+- `carto-light` and `carto-dark` tiles: CARTO now requires an API key and drew "API KEY REQUIRED" over every map. They now map to the new keyless `light` and `dark` styles (Esri Canvas).
+- `data-cell2-sheet` on a map (and so on a map embed) was ignored whenever the sheet had a `_config` tab, which plotted every tab. Named tabs now win; the config still colours the markers.
+- A map without `data-cell2-map-center` opened at world zoom; it now frames its markers.
+
 ## v1.3.0
 
 ### Added

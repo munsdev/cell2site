@@ -234,3 +234,34 @@ test('init: one request per tab however many elements use it; calling init again
   assert.equal(requests.length, 1);
   assert.equal(await page.$$eval('#a li', (e) => e.length), 3);
 });
+
+test('map: data-cell2-sheet wins over _config; config still colours markers; view frames the markers', async () => {
+  const config = csv([['Tab', 'Color', 'Icon'], ['Parks', '#16a34a', 'P'], ['Libraries', '#2563eb', 'L']]);
+  const parks = csv([['Name', 'Latitude', 'Longitude'], ['North', '60', '10'], ['South', '58', '12']]);
+  const libraries = csv([['Name', 'Latitude', 'Longitude'], ['Far', '-40', '170']]);
+  const { page } = await h.open(`
+    <div id="m" data-cell2-map-wrapper data-cell2-id="SHEET" data-cell2-sheet="Parks">
+      <span data-cell2-count></span>
+      <div data-cell2-map data-cell2-map-cluster-radius="1" style="height:300px;width:400px"></div>
+    </div>`, { _config: config, Parks: parks, Libraries: libraries });
+  await page.waitForFunction(() => document.querySelector('[data-cell2-count]').textContent === '2');
+  assert.deepEqual(await page.$$eval('.cell2site-map-marker div', (els) => els.map((e) => e.textContent)), ['P', 'P']);
+  await page.waitForTimeout(300);   // marker positions settle a frame after layout
+  // Both markers inside the map's box means the initial view was fitted to them, not left at world zoom.
+  const inside = await page.$$eval('.cell2site-map-marker', (els) => {
+    const box = document.querySelector('[data-cell2-map]').getBoundingClientRect();
+    return els.every((e) => { const r = e.getBoundingClientRect(); return r.left >= box.left && r.right <= box.right && r.top >= box.top && r.bottom <= box.bottom; });
+  });
+  assert.ok(inside, 'markers outside the initial view');
+});
+
+test('map: carto tile names fall back to keyless tiles', async () => {
+  const { page } = await h.open(`
+    <div data-cell2-map-wrapper data-cell2-id="SHEET" data-cell2-sheet="Places">
+      <div data-cell2-map data-cell2-map-tiles="carto-light" style="height:200px"></div>
+    </div>`, { Places: PLACES });
+  const tile = await page.waitForSelector('img.leaflet-tile', { state: 'attached' });
+  const src = await tile.getAttribute('src');
+  assert.match(src, /arcgisonline\.com\/.*World_Light_Gray_Base/);
+  assert.doesNotMatch(src, /cartocdn/);
+});

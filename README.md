@@ -3,7 +3,7 @@
 **Turn a Google Sheet into lists, tabs, maps and drop-in embeds on any web page. One script tag, no server, no API key, no build step.**
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.0/cell2site.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.1/cell2site.js"></script>
 ```
 
 [cell2site.com](https://cell2site.com) · [Viewer](https://cell2site.com/view) · [Examples](https://cell2site.com/examples/) · [Changelog](CHANGELOG.md)
@@ -41,7 +41,7 @@ Columns named like `Title`, `Description`, `Image`, `URL` are picked up automati
 
 ```html
 <div data-cell2-embed="list" data-cell2-id="YOUR_SHEET_URL"></div>
-<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.0/cell2site.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.1/cell2site.js"></script>
 ```
 
 **No scripts allowed.** Open the [viewer](https://cell2site.com/view), configure the sheet, click **Copy iframe code**, and paste it into any embed or HTML field. The iframe loads the viewer with `&embed=1`, which hides its form and shows only the widget.
@@ -155,7 +155,7 @@ Tabs come from an optional **`_config`** tab, one row per tab (`data-cell2-confi
   <select data-cell2-map-filter="Category"><option value="">All</option></select>
   <button data-cell2-map-locate>Near me</button>
   <button data-cell2-map-reset>Reset</button>
-  <div data-cell2-map style="height:480px" data-cell2-map-tiles="carto-light"></div>
+  <div data-cell2-map style="height:480px" data-cell2-map-tiles="light"></div>
   <div data-cell2-map-card style="display:none">   <!-- popup template -->
     <strong data-cell2-field="Name"></strong>
   </div>
@@ -166,7 +166,7 @@ Tabs come from an optional **`_config`** tab, one row per tab (`data-cell2-confi
 - `data-cell2-sheet` may list several tabs. With a `_config` tab, the map shows every tab it lists and `data-cell2-map-filter-tabs` builds a tab dropdown.
 - Marker colour and icon: the row's `Color` / `Icon`, then its tab's config row, then grey and a pin.
 - Popups are built on first open. Without a card, the popup shows the `Name` column.
-- Tiles: `osm` (default), `carto-light`, `carto-dark`, `esri-street`, `esri-topo`. Leaflet and MarkerCluster load from cdnjs only on pages with a map.
+- Tiles: `osm` (default), `light`, `dark`, `esri-street`, `esri-topo`, all keyless. `carto-light` and `carto-dark` still work as aliases for `light` and `dark`, because CARTO now requires an API key. Leaflet and MarkerCluster load from cdnjs only on pages with a map.
 - The map element needs a CSS height. Filtering refits the view unless `data-cell2-map-refit="false"`; Reset returns to the starting view.
 
 ### List and map
