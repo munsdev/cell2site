@@ -1,8 +1,8 @@
 /*!
- * cell2site v1.3.1 — Google Sheets → lists, tabs, maps and drop-in embeds.
+ * cell2site v1.3.2 — Google Sheets → lists, tabs, maps and drop-in embeds.
  * No build step, no API keys, no server. MIT © muns.dev — https://cell2site.com
  *
- *   <script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.1/cell2site.js"></script>
+ *   <script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.2/cell2site.js"></script>
  *
  * Share the sheet as "Anyone with the link → Viewer", then either drop in a ready-made embed:
  *
@@ -21,7 +21,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.3.1';
+  const VERSION = '1.3.2';
   const LOG = '[cell2site]';
   const A = 'data-cell2-';
 
@@ -519,6 +519,11 @@
     '.c2 th{background:var(--c2-soft);font-weight:600;white-space:nowrap}.c2 tr:last-child td{border-bottom:0}',
     '.c2-map{height:var(--c2-map-height,480px);border-radius:var(--c2-radius);overflow:hidden}',
     '.c2 .leaflet-popup .c2-item{padding:0;border:0;color:#222}',
+    // Leaflet sizes a popup by its widest unwrapped line, so a short title made a narrow column of
+    // text. A floor and a ceiling relative to the map itself (container units) keep popups readable
+    // on a wide map and inside the frame on a phone. Browsers without cqw keep Leaflet's sizing.
+    '.cell2site-map{container-type:inline-size}',
+    '.cell2site-map .leaflet-popup-content{min-width:min(240px,calc(100cqw - 90px));max-width:calc(100cqw - 70px);overflow-wrap:anywhere}',
     '.c2-note{margin:0;padding:16px;border:1px dashed var(--c2-line);border-radius:var(--c2-radius);opacity:.8}',
   ].join('');
 
@@ -871,6 +876,7 @@
     const refit = attr(mapEl, 'map-refit').toLowerCase() !== 'false';
     const tiles = TILES[attr(mapEl, 'map-tiles').toLowerCase()] || TILES.osm;
 
+    mapEl.classList.add('cell2site-map');
     const map = L.map(mapEl, { center: start, zoom: zoom });
     L.tileLayer(tiles[0], tiles[1]).addTo(map);
     const cluster = L.markerClusterGroup({ maxClusterRadius: parseInt(attr(mapEl, 'map-cluster-radius'), 10) || 80 });

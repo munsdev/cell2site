@@ -3,7 +3,7 @@
 **Turn a Google Sheet into lists, tabs, maps and drop-in embeds on any web page. One script tag, no server, no API key, no build step.**
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.1/cell2site.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.2/cell2site.js"></script>
 ```
 
 [cell2site.com](https://cell2site.com) · [Viewer](https://cell2site.com/view) · [Examples](https://cell2site.com/examples/) · [Changelog](CHANGELOG.md)
@@ -41,7 +41,7 @@ Columns named like `Title`, `Description`, `Image`, `URL` are picked up automati
 
 ```html
 <div data-cell2-embed="list" data-cell2-id="YOUR_SHEET_URL"></div>
-<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.1/cell2site.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.2/cell2site.js"></script>
 ```
 
 **No scripts allowed.** Open the [viewer](https://cell2site.com/view), configure the sheet, click **Copy iframe code**, and paste it into any embed or HTML field. The iframe loads the viewer with `&embed=1`, which hides its form and shows only the widget.

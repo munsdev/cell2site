@@ -2,6 +2,11 @@
 
 Semantic versioning. Tags: `1.2.0` (no `v`), `v1.2.1`, then `v1.3.0` onward.
 
+## v1.3.2
+
+### Fixed
+- Map popups for places with a short name shrank to a narrow column of text. Popups now keep a minimum width relative to the map's own width (240px on wide maps, less on a phone) and never overflow the frame.
+
 ## v1.3.1
 
 ### Fixed
