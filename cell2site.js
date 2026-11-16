@@ -1,8 +1,8 @@
 /*!
- * cell2site v1.3.0 — Google Sheets → lists, tabs, maps and drop-in embeds.
+ * cell2site v1.3.1 — Google Sheets → lists, tabs, maps and drop-in embeds.
  * No build step, no API keys, no server. MIT © muns.dev — https://cell2site.com
  *
- *   <script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.0/cell2site.js"></script>
+ *   <script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.1/cell2site.js"></script>
  *
  * Share the sheet as "Anyone with the link → Viewer", then either drop in a ready-made embed:
  *
@@ -21,7 +21,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.3.0';
+  const VERSION = '1.3.1';
   const LOG = '[cell2site]';
   const A = 'data-cell2-';
 
@@ -783,15 +783,19 @@
   const TILES = {
     'osm': ['https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       { attribution: '© OpenStreetMap contributors', maxZoom: 19 }],
-    'carto-light': ['https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-      { attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 20 }],
-    'carto-dark': ['https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      { attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 20 }],
+    'light': ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri, © OpenStreetMap contributors', maxZoom: 16 }],
+    'dark': ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri, © OpenStreetMap contributors', maxZoom: 16 }],
     'esri-street': ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
       { attribution: '© Esri', maxZoom: 19 }],
     'esri-topo': ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
       { attribution: '© Esri', maxZoom: 19 }],
   };
+  // CARTO's basemaps began requiring an API key and render "API KEY REQUIRED" over the map.
+  // Pages that asked for them get the nearest keyless style instead.
+  TILES['carto-light'] = TILES.light;
+  TILES['carto-dark'] = TILES.dark;
 
   // Leaflet and MarkerCluster are fetched only when a page actually contains a map.
   const CDN = 'https://cdnjs.cloudflare.com/ajax/libs/';
@@ -847,19 +851,22 @@
     setVisible(find(wrapper, 'error'), false);
     injectStyles();
 
+    const named = parseList(attr(wrapper, 'sheet'));
     let config, records;
     try {
       await loadLeaflet();
       config = await fetchConfig(source, wrapper, ttl);
-      // With a config sheet the map shows every tab it lists; otherwise the tab(s) named on the wrapper.
-      const names = config.tabs.length ? sourceTabsOf(config.tabs) : parseList(attr(wrapper, 'sheet'));
+      // Tabs named on the wrapper win; without them, every tab the config sheet lists. The config
+      // still styles markers either way — before, it silently overrode data-cell2-sheet.
+      const names = named.length ? named : sourceTabsOf(config.tabs);
       records = (await Promise.all((names.length ? names : ['']).map((n) => fetchTab(source, n, ttl)))).flat();
     } catch (err) {
       return fail(wrapper, err);
     }
 
     const center = parseList(attr(mapEl, 'map-center')).map(parseFloat);
-    const start = center.length === 2 && !center.some(isNaN) ? center : CENTER;
+    const hasView = center.length === 2 && !center.some(isNaN);
+    const start = hasView ? center : CENTER;
     const zoom = parseFloat(attr(mapEl, 'map-zoom')) || ZOOM.start;
     const refit = attr(mapEl, 'map-refit').toLowerCase() !== 'false';
     const tiles = TILES[attr(mapEl, 'map-tiles').toLowerCase()] || TILES.osm;
@@ -912,17 +919,22 @@
       cluster.addLayers(visible);
       findAll(wrapper, 'count').forEach((el) => { el.textContent = visible.length; });
       setVisible(find(wrapper, 'empty'), visible.length === 0);
-      if (change && change.reset) return map.setView(start, zoom);
-      if (change !== 'initial' && refit && visible.length) {
-        map.fitBounds(L.featureGroup(visible).getBounds(), { padding: [32, 32], maxZoom: 10 });
+      if (change === 'quiet') return;   // flyToName moves the map itself
+      const initial = change === 'initial' || (change && change.reset);
+      // An author-set centre is respected until someone filters; otherwise frame the markers.
+      if (initial && hasView) return map.setView(start, zoom);
+      if ((initial || refit) && visible.length) {
+        // Pins hang above their point, so the top needs their height on top of the margin.
+        map.fitBounds(L.featureGroup(visible).getBounds(), { paddingTopLeft: [32, 32 + MARKER.size],
+          paddingBottomRight: [32, 32], maxZoom: 10, animate: !initial });
       }
     }
 
-    const tabOptions = config.tabs.length
+    const tabOptions = config.tabs.length && !named.length
       ? config.tabs.map((t) => ({ value: t.sourceTabs.join(','), label: t.label }))
       : Array.from(new Set(located.map((r) => r._tab))).map((t) => ({ value: t, label: t }));
     const filters = wireFilters(wrapper, 'map-', located, tabOptions, draw);
-    draw('initial');   // keep the author's centre and zoom until someone filters
+    draw('initial');
 
     const locate = find(wrapper, 'map-locate');
     if (locate && navigator.geolocation) {
@@ -941,7 +953,7 @@
           if (!record) return;
           const marker = markers.get(record);
           filters.reset();
-          draw('initial');
+          draw('quiet');
           map.flyTo(marker.getLatLng(), toZoom || ZOOM.flyTo, { duration: 1 });
           // A marker still inside a cluster cannot open its popup; zoomToShowLayer splits it out first.
           map.once('moveend', () => cluster.zoomToShowLayer(marker, () => marker.openPopup()));
