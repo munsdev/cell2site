@@ -17,7 +17,7 @@ One file, `cell2site.js`, vanilla JS, no build step, no package manager for the 
 
 ## The website
 
-`site/` is cell2site.com: plain HTML, no build. `npx wrangler deploy` copies `cell2site.js` in and publishes it on Cloudflare Workers (see `wrangler.jsonc`). Its examples read the public demo sheet, so keep them working when you change behaviour.
+`site/` is cell2site.com. Pages are built by `scripts/build-site.mjs` from the shared layout in `scripts/site/` (header, footer, consent banner), styled with Tailwind (`site/src/styles.css`), and deployed with `npx wrangler deploy`. The docs and changelog pages are rendered from `README.md` and `CHANGELOG.md`, so edit those, never a page. Examples live in `site/examples/` as plain snippets, shown live with their code.
 
 ## Reporting a bug
 

@@ -1,47 +1,84 @@
-// Bakes site/ (plus cell2site.js) into one Worker module, .wrangler/site-worker.js.
-// Files are embedded rather than uploaded as Workers static assets: the whole site is a few
-// hundred KB, and asset uploads need a second, short-lived token that some CI proxies strip.
-import { readFileSync, readdirSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, relative, extname } from 'node:path';
+// Builds cell2site.com into one Worker module, .wrangler/site-worker.js.
+//
+//   1. copy static assets, the self-hosted fonts and this commit's cell2site.js into .wrangler/dist
+//   2. compile Tailwind (site/src/styles.css)
+//   3. render every page through the shared layout (scripts/site/), with hashed asset URLs
+//   4. embed the whole of dist into the Worker
+//
+// Files are embedded rather than uploaded as Workers static assets: the site is a few hundred KB,
+// and asset uploads need a second, short-lived token that proxies injecting credentials replace.
+import { readFileSync, readdirSync, statSync, mkdirSync, writeFileSync, rmSync, cpSync } from 'node:fs';
+import { join, relative, extname, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { SITE, page } from './site/layout.mjs';
+import { home } from './site/home.mjs';
+import { pages } from './site/pages.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
-const siteDir = join(root, 'site');
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8', '.md': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml' };
+const dist = join(root, '.wrangler/dist');
+const library = readFileSync(join(root, 'cell2site.js'), 'utf8');
+SITE.version = library.match(/const VERSION = '([\d.]+)'/)[1];
 
+// 1. Static files.
+rmSync(dist, { recursive: true, force: true });
+mkdirSync(join(dist, 'assets/fonts'), { recursive: true });
+cpSync(join(root, 'site/assets'), join(dist, 'assets'), { recursive: true });
+writeFileSync(join(dist, 'cell2site.js'), library);
+const FONTS = { 'ubuntu-400': 'ubuntu/files/ubuntu-latin-400-normal', 'ubuntu-500': 'ubuntu/files/ubuntu-latin-500-normal',
+  'ubuntu-700': 'ubuntu/files/ubuntu-latin-700-normal', 'ubuntu-mono-400': 'ubuntu-mono/files/ubuntu-mono-latin-400-normal',
+  'ubuntu-mono-700': 'ubuntu-mono/files/ubuntu-mono-latin-700-normal' };
+for (const [name, file] of Object.entries(FONTS)) {
+  cpSync(join(root, 'node_modules/@fontsource', file + '.woff2'), join(dist, 'assets/fonts', name + '.woff2'));
+}
+
+// 2. Styles. Tailwind scans site/ and scripts/site/ for class names (see @source in the CSS).
+execFileSync(join(root, 'node_modules/.bin/tailwindcss'),
+  ['-i', join(root, 'site/src/styles.css'), '-o', join(dist, 'assets/site.css'), '--minify'], { stdio: 'pipe' });
+
+// 3. Pages. ?v=<hash> makes every asset URL change with its content, so it can be cached forever.
+const hashes = {};
+const asset = (url) => {
+  hashes[url] = hashes[url] || createHash('sha256').update(readFileSync(join(dist, url))).digest('hex').slice(0, 10);
+  return url + '?v=' + hashes[url];
+};
+for (const p of [home(SITE.version), ...pages(root)]) {
+  const file = join(dist, p.path.endsWith('/') ? p.path + 'index.html' : p.path);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, page(p, asset));
+}
+
+// 4. The Worker.
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
+const TEXT = ['.html', '.css', '.js', '.svg'];
 const files = {};
 (function walk(dir) {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
-    if (statSync(path).isDirectory()) walk(path);
-    else if (name !== '_redirects' && name !== 'cell2site.js') files['/' + relative(siteDir, path)] = path;
+    if (statSync(path).isDirectory()) { walk(path); continue; }
+    const ext = extname(name);
+    const text = TEXT.includes(ext);
+    files['/' + relative(dist, path)] = [TYPES[ext] || 'application/octet-stream', text ? 0 : 1,
+      readFileSync(path).toString(text ? 'utf8' : 'base64')];
   }
-})(siteDir);
-files['/cell2site.js'] = join(root, 'cell2site.js');   // always the library on this commit
+})(dist);
 
-// Pages reference the library as cell2site.js?v=<hash>: a browser holding a cached copy from the
-// previous deploy otherwise pairs a new page with an old script, which looks like a fresh bug.
-const libHash = createHash('sha256').update(readFileSync(files['/cell2site.js'])).digest('hex').slice(0, 10);
-const site = Object.fromEntries(Object.entries(files).map(([url, path]) => {
-  let body = readFileSync(path, 'utf8');
-  if (path.endsWith('.html')) body = body.replace(/(src="(?:\.\.\/|\/)cell2site\.js)"/g, '$1?v=' + libHash + '"');
-  return [url, [TYPES[extname(path)] || 'application/octet-stream', body]];
-}));
-
-// _redirects: "from to [status]" per line, # comments.
-const redirects = Object.fromEntries(readFileSync(join(siteDir, '_redirects'), 'utf8').split('\n')
-  .map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))   // whole-line comments only: URLs carry #fragments
+// _redirects: "from to [status]" per line; whole-line # comments only, since targets can carry #fragments.
+const redirects = Object.fromEntries(readFileSync(join(root, 'site/_redirects'), 'utf8').split('\n')
+  .map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
   .map((l) => { const [from, to, status] = l.split(/\s+/); return [from, [to, Number(status) || 301]]; }));
 
 const worker = `// Generated by scripts/build-site.mjs from site/. Do not edit.
-const SITE = ${JSON.stringify(site)};
+const FILES = ${JSON.stringify(files)};
 const REDIRECTS = ${JSON.stringify(redirects)};
 const CANONICAL = 'cell2site.com';
-const SECURITY = {
+const HEADERS = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'strict-origin-when-cross-origin',
+  'permissions-policy': 'camera=(), microphone=(), payment=()',
 };
+const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 
 export default {
   fetch(request) {
@@ -50,22 +87,23 @@ export default {
     if (url.hostname !== CANONICAL && !url.hostname.endsWith('.workers.dev')) {
       return Response.redirect('https://' + CANONICAL + url.pathname + url.search, 301);
     }
-    let path = decodeURIComponent(url.pathname);
+    const path = decodeURIComponent(url.pathname);
     const redirect = REDIRECTS[path];   // exact match: a looser one turned /view/?sheet=… into a loop
     if (redirect) return Response.redirect(new URL(redirect[0], url).href, redirect[1]);
-    if (path.endsWith('/')) path += 'index.html';
-    else if (!SITE[path] && SITE[path + '/index.html']) return Response.redirect(url.origin + path + '/' + url.search, 301);
-    const file = SITE[path] || SITE[path + '.html'];
-    const [type, body] = file || SITE['/404.html'];
-    return new Response(request.method === 'HEAD' ? null : body, {
-      status: file ? 200 : 404,
-      // Versioned script URLs are immutable; everything else revalidates so a deploy shows at once.
-      headers: Object.assign({ 'content-type': type,
-        'cache-control': url.searchParams.has('v') ? 'public, max-age=31536000, immutable' : 'no-cache' }, SECURITY),
+    if (!path.endsWith('/') && !FILES[path] && FILES[path + '/index.html']) {
+      return Response.redirect(url.origin + path + '/' + url.search, 301);
+    }
+    const found = FILES[path.endsWith('/') ? path + 'index.html' : path];
+    const [type, binary, body] = found || FILES['/404.html'];
+    // Versioned asset URLs are immutable; pages revalidate, so a deploy shows at once.
+    const cache = url.searchParams.has('v') ? 'public, max-age=31536000, immutable'
+      : path.startsWith('/assets/fonts/') ? 'public, max-age=2592000' : 'no-cache';
+    return new Response(request.method === 'HEAD' ? null : binary ? bytes(body) : body, {
+      status: found ? 200 : 404,
+      headers: Object.assign({ 'content-type': type, 'cache-control': cache }, HEADERS),
     });
   },
 };
 `;
-mkdirSync(join(root, '.wrangler'), { recursive: true });
 writeFileSync(join(root, '.wrangler/site-worker.js'), worker);
-console.log('site-worker.js:', Object.keys(site).length, 'files,', Math.round(worker.length / 1024), 'KB');
+console.log('site-worker.js:', Object.keys(files).length, 'files,', Math.round(worker.length / 1024), 'KB');
