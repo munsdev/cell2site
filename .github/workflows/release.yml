@@ -1,0 +1,28 @@
+# Tags and releases a version as soon as it lands on main: the version comes from the
+# `const VERSION = '…'` line in cell2site.js, so bumping that line is the whole release process.
+# jsDelivr serves @vX.Y.Z from the tag, which is why the tag must exist the moment docs point at it.
+name: Release
+on:
+  push:
+    branches: [main]
+    paths: [cell2site.js]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag and release if this version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(sed -n "s/^ *const VERSION = '\([0-9.]*\)';/\1/p" cell2site.js)
+          [ -n "$version" ] || { echo "No VERSION line in cell2site.js"; exit 1; }
+          tag="v$version"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "$tag already exists; nothing to do."; exit 0
+          fi
+          notes=$(awk -v h="## $tag" '$0==h{on=1;next} /^## /{on=0} on' CHANGELOG.md)
+          gh release create "$tag" --target "$GITHUB_SHA" --title "cell2site $tag" --notes "${notes:-See CHANGELOG.md}"
