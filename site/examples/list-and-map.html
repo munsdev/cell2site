@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cell2site example: list and map</title>
+  <link rel="stylesheet" href="example.css">
+</head>
+<body>
+  <p class="back"><a href="/">cell2site</a> / examples / list and map · <a href="https://docs.google.com/spreadsheets/d/1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ/edit">open the sheet</a></p>
+  <!-- Uses the public demo sheet. To use yours, replace the data-cell2-id value with your sheet's
+       address-bar URL (shared as "Anyone with the link") and match the column names. -->
+
+  <!-- data-cell2-map-ref on the list names data-cell2-map-id on the map: clicking a card
+       flies to the marker with the same Name and opens its popup. -->
+  <style> .split { display: grid; grid-template-columns: 1fr 1.4fr; gap: 1rem; } @media (max-width: 700px) { .split { grid-template-columns: 1fr; } } .card { cursor: pointer; } </style>
+  <div class="split">
+    <div data-cell2-list data-cell2-id="1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ" data-cell2-sheet="Museums" data-cell2-map-ref="museums"
+         style="max-height:480px;overflow:auto">
+      <article class="card" data-cell2-item>
+        <h3 data-cell2-field="Name"></h3>
+        <span class="tag" data-cell2-field="City"></span>
+      </article>
+    </div>
+    <div data-cell2-map-wrapper data-cell2-id="1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ" data-cell2-sheet="Museums" data-cell2-map-id="museums">
+      <div data-cell2-map style="height:480px;border-radius:10px"></div>
+      <div data-cell2-map-card style="display:none">
+        <strong data-cell2-field="Name"></strong>
+        <p data-cell2-field="Description"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../cell2site.js"></script>
+</body>
+</html>

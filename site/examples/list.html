@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cell2site example: custom list</title>
+  <link rel="stylesheet" href="example.css">
+</head>
+<body>
+  <p class="back"><a href="/">cell2site</a> / examples / custom list · <a href="https://docs.google.com/spreadsheets/d/1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ/edit">open the sheet</a></p>
+  <!-- Uses the public demo sheet. To use yours, replace the data-cell2-id value with your sheet's
+       address-bar URL (shared as "Anyone with the link") and match the column names. -->
+
+  <!-- Your own markup. data-cell2-wrapper lets search, filters and states sit outside the list. -->
+  <div data-cell2-wrapper>
+    <div class="toolbar">
+      <input data-cell2-search data-cell2-search-cols="Name, Description" placeholder="Search…" aria-label="Search">
+      <select data-cell2-filter="City" aria-label="City"><option value="">All cities</option></select>
+      <button data-cell2-reset>Reset</button>
+      <span><span data-cell2-count></span> libraries</span>
+    </div>
+    <p data-cell2-empty style="display:none">Nothing matches.</p>
+    <p data-cell2-error style="display:none">Could not load: <span data-cell2-field="message"></span></p>
+
+    <div data-cell2-list data-cell2-id="1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ" data-cell2-sheet="Libraries" data-cell2-sort-col="Name">
+      <!-- The template: cloned once per row, then removed. -->
+      <article class="card" data-cell2-item>
+        <h3 data-cell2-field="Name"></h3>
+        <p data-cell2-field="Description"></p>
+        <span class="tag" data-cell2-field="City"></span>
+        <!-- The wrapper is removed when Website is blank, so there is no empty link. -->
+        <span data-cell2-field-wrapper> · <a data-cell2-field-attr="href:Website" target="_blank" rel="noopener">Website</a></span>
+      </article>
+    </div>
+  </div>
+
+  <script src="../cell2site.js"></script>
+</body>
+</html>

@@ -24,7 +24,7 @@ Publish after saving.
 Add an **Embed** element (Add panel, Advanced, Embed) where the content should appear and paste:
 
 ```html
-<div data-cell2-embed="cards" data-cell2-id="YOUR_SHEET_URL"></div>
+<div data-cell2-embed="cards" data-cell2-id="https://docs.google.com/spreadsheets/d/1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ/edit"></div>
 ```
 
 `data-cell2-embed` is `list`, `cards`, `table` or `map`. It takes the host page's font and colour; theme it with `--c2-accent`, `--c2-radius` and friends (see the README).

@@ -1,0 +1,5 @@
+# Paths from the earlier Webflow site, kept so old links still land somewhere useful.
+/docs           https://github.com/munsdev/cell2site#readme  301
+/lists          /examples/list.html                          301
+/maps           /examples/map.html                           301
+/combinations   /examples/list-and-map.html                  301

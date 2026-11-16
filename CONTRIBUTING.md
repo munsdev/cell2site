@@ -15,6 +15,10 @@ One file, `cell2site.js`, vanilla JS, no build step, no package manager for the 
 - **Cell content is untrusted.** Anything written into the DOM from a sheet goes through `setText`, `setHtml` or `textContent`, never raw `innerHTML`.
 - **Comments say why**, not what.
 
+## The website
+
+`site/` is cell2site.com: plain HTML, no build. `npx wrangler deploy` copies `cell2site.js` in and publishes it on Cloudflare Workers (see `wrangler.jsonc`). Its examples read the public demo sheet, so keep them working when you change behaviour.
+
 ## Reporting a bug
 
 Include what you expected, what happened (console output starting `[cell2site]`), and a link to a minimal public sheet and page that reproduce it. Most issues come down to sheet structure or sharing.

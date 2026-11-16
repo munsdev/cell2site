@@ -11,7 +11,8 @@ Semantic versioning. Tags: `1.2.0` (no `v`), `v1.2.1`, then `v1.3.0` onward.
 - `data-cell2-wrapper` (count, empty, error, search and filters may sit outside the list element) and `data-cell2-hide-if`.
 - `cell2:ready` CustomEvent from each list, tabs and map.
 - `window.cell2site = { version, init(root), clearCache(), maps }`. `init()` can be called again after injecting markup. `window.__cell2siteMaps` remains as an alias.
-- Browser-only [viewer](viewer/index.html) with share link, embed code and iframe code; [examples](examples/).
+- [cell2site.com](https://cell2site.com) now lives in this repo (`site/`), deployed with `wrangler deploy`; examples run against a public demo sheet.
+- Browser-only [viewer](site/view/index.html) with share link, embed code and iframe code; [examples](site/examples/).
 
 ### Changed
 - Cell HTML is sanitised and `[label](https://…)` and bare URLs are auto-linked.

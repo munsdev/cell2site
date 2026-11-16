@@ -2,6 +2,7 @@
   "name": "cell2site",
   "version": "1.3.0",
   "private": true,
+  "type": "module",
   "description": "Google Sheets → lists, tabs, maps and embeds. One script tag.",
   "license": "MIT",
   "scripts": {

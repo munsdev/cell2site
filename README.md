@@ -6,7 +6,7 @@
 <script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.0/cell2site.js"></script>
 ```
 
-[cell2site.com](https://cell2site.com) · [Viewer](https://cell2site.com/view) · [Examples](examples/) · [Changelog](CHANGELOG.md)
+[cell2site.com](https://cell2site.com) · [Viewer](https://cell2site.com/view) · [Examples](https://cell2site.com/examples/) · [Changelog](CHANGELOG.md)
 
 ## Quick start
 
@@ -31,9 +31,9 @@ Columns named like `Title`, `Description`, `Image`, `URL` are picked up automati
 
 ## Platforms
 
-**Plain HTML.** Put the script tag before `</body>` and the markup anywhere. See [examples/](examples/).
+**Plain HTML.** Put the script tag before `</body>` and the markup anywhere. See [site/examples/](site/examples/), live at [cell2site.com/examples](https://cell2site.com/examples/).
 
-**Webflow.** Script in Site settings, Custom code, Footer; attributes via Element settings, Custom attributes. Step by step in [examples/webflow.md](examples/webflow.md).
+**Webflow.** Script in Site settings, Custom code, Footer; attributes via Element settings, Custom attributes. Step by step in [site/examples/webflow.md](site/examples/webflow.md).
 
 **WordPress.** Add a **Custom HTML** block containing the embed div and the script tag. Needs a role allowed to post unfiltered HTML (Administrator on single sites).
 
@@ -176,7 +176,7 @@ Tabs come from an optional **`_config`** tab, one row per tab (`data-cell2-confi
 <div data-cell2-map-wrapper data-cell2-map-id="places" …>…</div>
 ```
 
-Clicking a list item flies to the marker with the same `Name` and opens its popup. Put `data-cell2-map-trigger` on a child to make only that child clickable. Names must be unique to link reliably. See [examples/list-and-map.html](examples/list-and-map.html).
+Clicking a list item flies to the marker with the same `Name` and opens its popup. Put `data-cell2-map-trigger` on a child to make only that child clickable. Names must be unique to link reliably. See [site/examples/list-and-map.html](site/examples/list-and-map.html).
 
 ## Fields and safe HTML
 
@@ -191,6 +191,14 @@ Clicking a list item flies to the marker with the same `Name` and opens its popu
 Cell HTML is sanitised: `script`, `style`, `link`, `meta`, `base`, `object`, `embed`, `form`, `svg`, `math` and `template` tags are removed, as are `on*` handlers and any URL attribute that is not `http`, `https`, `mailto` or `tel`. Cells can be fed by a form or a stranger, so treat them as untrusted anyway.
 
 Google's CSV export drops native hyperlinks (Insert, Link); only the visible text survives. Put the URL in its own column, or write `[label](https://…)` in the cell.
+
+## Styling by value
+
+Sheet formatting (cell colours, bold, fonts) is not part of what Google exports, and reading it would need an API key. Put the styling decision in a column instead:
+
+- **A colour column.** `Color` and `Icon` columns style map markers directly. For anything else, `data-cell2-var="accent:Color"` sets `--accent` on the element for your CSS to use.
+- **A status column.** Copy any cell into an attribute and style that: `data-cell2-field-attr="data-status:Status"`, then `[data-status="Sold out"] { opacity: .5 }`.
+- **Per tab.** The `_config` tab gives every tab its own `Color`, `Icon`, label and sort order, plus any extra column for `data-cell2-var`. It is optional: without it, set the same things with attributes.
 
 ## Events and JS API
 
