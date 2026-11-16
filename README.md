@@ -1,436 +1,313 @@
 # cell2site
 
-**Turn a Google Sheet into live website content — no build step, no API keys, one script tag.**
-
-cell2site reads rows from a published Google Sheet and renders them into your HTML as CMS lists, Webflow-style tabs, or an interactive Leaflet map. Markdown links, bare URLs, and raw HTML in cells are all rendered automatically.
+**Turn a Google Sheet into lists, tabs, maps and drop-in embeds on any web page. One script tag, no server, no API key, no build step.**
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.2.0/cell2site.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.0/cell2site.js"></script>
 ```
 
----
-
-## Contents
-
-- [How it works](#how-it-works)
-- [Quick start](#quick-start)
-- [CMS — Lists](#cms--lists)
-- [CMS — Tabs](#cms--tabs)
-- [Map](#map)
-- [Config sheet](#config-sheet-optional)
-- [Link rendering](#link-rendering)
-- [Full attribute reference](#full-attribute-reference)
-- [Notes](#notes)
-
----
-
-## How it works
-
-1. Publish your Google Sheet to the web as CSV (File → Share → Publish to web → Entire document → CSV)
-2. Copy the Sheet ID from the URL: `https://docs.google.com/spreadsheets/d/`**`SHEET_ID`**`/edit`
-3. Add `data-cell2-*` attributes to your HTML — cell2site does the rest
-
-No server, no API keys, no build pipeline.
-
----
+[cell2site.com](https://cell2site.com) · [Viewer](https://cell2site.com/view) · [Examples](examples/) · [Changelog](CHANGELOG.md)
 
 ## Quick start
 
-### Publish your sheet
-
-File → Share → Publish to web → Entire document → CSV → Publish
-
-### Add the script
+1. **Share the sheet.** Google Sheets, Share, General access: **Anyone with the link**, role **Viewer**.
+2. **Add the script** (above) once, before `</body>`.
+3. **Add an embed** where the content should appear. Paste the sheet's address-bar URL, or just its ID:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.2.0/cell2site.js"></script>
+<div data-cell2-embed="cards" data-cell2-id="https://docs.google.com/spreadsheets/d/…/edit"></div>
 ```
 
-Place it before `</body>`.
+Columns named like `Title`, `Description`, `Image`, `URL` are picked up automatically. Try it without writing code in the [viewer](https://cell2site.com/view).
 
----
+## Choose your setup
 
-## CMS — Lists
+| Setup | Use it when | You write |
+|---|---|---|
+| **Embed** (`data-cell2-embed`) | You want a good-looking result fast and don't need custom design. | One `<div>` |
+| **Custom markup** (`data-cell2-list`, `-tabs`, `-map-wrapper`) | You design the layout yourself, e.g. in Webflow. | Your HTML plus attributes |
+| **Viewer link** | You just need to share a sheet as a page. | Nothing; copy the link |
+| **iframe** | The platform forbids scripts. | One `<iframe>` from the viewer |
 
-Render rows from a sheet tab as a repeating list of HTML elements.
+## Platforms
 
-### Markup
+**Plain HTML.** Put the script tag before `</body>` and the markup anywhere. See [examples/](examples/).
+
+**Webflow.** Script in Site settings, Custom code, Footer; attributes via Element settings, Custom attributes. Step by step in [examples/webflow.md](examples/webflow.md).
+
+**WordPress.** Add a **Custom HTML** block containing the embed div and the script tag. Needs a role allowed to post unfiltered HTML (Administrator on single sites).
+
+**Squarespace, Wix, Framer, Carrd.** Use the platform's code block or HTML embed element (Squarespace: Code Block, Wix: Embed Code, Framer: Embed, Carrd: Embed widget; some need a paid plan). Paste the same two lines:
 
 ```html
-<div data-cell2-list data-cell2-id="SHEET_ID" data-cell2-sheet="Projects">
+<div data-cell2-embed="list" data-cell2-id="YOUR_SHEET_URL"></div>
+<script src="https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.0/cell2site.js"></script>
+```
 
-  <!-- Loading skeleton appears here automatically -->
+**No scripts allowed.** Open the [viewer](https://cell2site.com/view), configure the sheet, click **Copy iframe code**, and paste it into any embed or HTML field. The iframe loads the viewer with `&embed=1`, which hides its form and shows only the widget.
 
-  <!-- Template — cloned once per row, then removed -->
-  <div data-cell2-item>
+## Embeds
+
+```html
+<div data-cell2-embed="cards" data-cell2-id="YOUR_SHEET_URL" data-cell2-sheet="Events"></div>
+```
+
+`data-cell2-embed` is `list`, `cards`, `table` or `map`. The first row of the tab is the header.
+
+**Columns are guessed by header name** (case-insensitive):
+
+| Role | Matches |
+|---|---|
+| title | `title`, `name`, `question`, `headline` (else the first unclaimed column) |
+| text | `description`, `summary`, `answer`, `details`, `text`, `notes`, `about`, `bio` |
+| image | `image`, `photo`, `picture`, `logo`, `thumbnail`, `img` |
+| link | `url`, `link`, `website`, `web` (the title links here) |
+| lat / lng | `latitude`, `lat` / `longitude`, `lng`, `lon`, `long` |
+
+Override a guess with `data-cell2-col-title`, `-col-text`, `-col-image`, `-col-link`, `-col-lat`, `-col-lng` (value: the column's exact header). Every other column appears as a labelled line (a table shows all columns). `Color` and `Icon` columns are reserved for map markers.
+
+**Search** appears above 10 rows. Force it with `data-cell2-embed-search="true"` or `"false"`. Map embeds have none; use custom markup for a searchable map.
+
+**Passed through to the list:** `data-cell2-sort-col`, `-sort-dir`, `-sort-type`, `-item-limit`, `-map-ref`. A map embed also takes `data-cell2-map-id`, `-col-name`, `-map-tiles`, `-map-center`, `-map-zoom`, `-map-cluster-radius` and `-map-refit`.
+
+**Theming** with CSS variables on the embed or any ancestor:
+
+```css
+[data-cell2-embed] { --c2-accent: #e11d48; --c2-radius: 4px; --c2-gap: 24px; --c2-map-height: 420px; }
+```
+
+`--c2-line` (borders) and `--c2-soft` (table header tint) default to mixes of the text colour. Embeds inherit the host font and colour, so they work on dark backgrounds.
+
+## Lists
+
+```html
+<div data-cell2-list data-cell2-id="YOUR_SHEET_URL" data-cell2-sheet="Projects">
+  <div data-cell2-item>                       <!-- template, cloned per row -->
     <h3 data-cell2-field="Title"></h3>
-    <p  data-cell2-field="Description"></p>
-    <a  data-cell2-field-attr="href:URL">Visit</a>
+    <a data-cell2-field-attr="href:URL">Visit</a>
   </div>
-
-  <!-- Optional state elements -->
-  <p data-cell2-empty>No results found.</p>
-  <p data-cell2-error>
-    Failed to load — <span data-cell2-field="message"></span>
-  </p>
-  <span data-cell2-count></span> results
-
+  <p data-cell2-empty style="display:none">No results.</p>
+  <p data-cell2-error style="display:none"><span data-cell2-field="message"></span></p>
 </div>
 ```
 
-### List wrapper attributes
+- Tab: `data-cell2-sheet` (default `Sheet1`), or the tab from a pasted `#gid=` URL.
+- Sort: `data-cell2-sort-col`, `-sort-dir` (`asc`/`desc`), `-sort-type` (`text`/`number`/`date`). Blank values sort last.
+- `data-cell2-item-limit="N"` shows the first N rows, after search and filters.
+- Loading: shimmer rows by default (`data-cell2-loading-count`, default 6), or your own element with `data-cell2-loading`.
+- `data-cell2-count` shows the visible row count; `data-cell2-empty` and `data-cell2-error` show on zero rows and on failure.
+- `data-cell2-wrapper` on an ancestor lets count, empty, error, search and filters sit outside the list element (needed when the list is a grid).
+- Clicking an item can fly a map to its marker: [List and map](#list-and-map).
 
-| Attribute | Description |
-|---|---|
-| `data-cell2-list` | Required. Marks this element as a list. |
-| `data-cell2-id` | Required. Google Sheet ID. |
-| `data-cell2-sheet` | Tab name (default: `Sheet1`). |
-| `data-cell2-sort-col` | Column name to sort by. |
-| `data-cell2-sort-dir` | `asc` or `desc` (default: `asc`). |
-| `data-cell2-sort-type` | `text`, `number`, or `date` (default: `text`). |
-| `data-cell2-item-limit` | Show only the first N records after sorting. |
-| `data-cell2-map-ref` | ID of a map wrapper to link item clicks to. |
-| `data-cell2-cache-ttl` | Cache duration in seconds (default: `60`). |
+## Search and filters
 
-### Item template attributes
-
-Place these on elements inside `[data-cell2-item]`:
-
-| Attribute | Description |
-|---|---|
-| `data-cell2-field="Column"` | Sets `textContent`. Auto-renders links (see [Link rendering](#link-rendering)). |
-| `data-cell2-field-html="Column"` | Sets `innerHTML`. Use for cells containing HTML markup. |
-| `data-cell2-field-attr="attr:Column"` | Sets an attribute. E.g. `href:URL`, `src:Image`. |
-| `data-cell2-field-wrapper` | Wraps a field — the whole wrapper is removed if the field is blank. |
-| `data-cell2-show-if="Column"` | Removes the element if the column value is falsy (`false`, `0`, blank, `no`). |
-| `data-cell2-var="name:Column; ..."` | Sets a CSS custom property (`--name`) from the column value. |
-| `data-cell2-map-trigger` | Scoped click target for map linking (falls back to the whole item). |
-
-### Skeleton loader
-
-A shimmer skeleton appears automatically while data loads. To use your own loader:
+On a list, inside the list or its `data-cell2-wrapper`:
 
 ```html
-<div data-cell2-loading style="display:none">Loading…</div>
+<input data-cell2-search data-cell2-search-cols="Title, Notes" placeholder="Search…">
+<button data-cell2-search-btn>Go</button>        <!-- optional: search at once -->
+<select data-cell2-filter="Category"><option value="">All</option></select>
+<button data-cell2-reset>Reset</button>
 ```
 
-Control skeleton row count with `data-cell2-loading-count="4"` on the list wrapper.
+- Search is debounced 250 ms and matches any column unless `-search-cols` limits it.
+- A filter select is filled with the column's unique values. The first `<option>` is yours (the "All" choice). Add `data-cell2-filter-multi` for multi-select; values within one select are OR-ed.
+- In a list inside tabs, `data-cell2-filter-tabs` fills a select with the source tabs, which is useful on a merged tab.
+- Several selects combine with AND; `data-cell2-filter-logic="or"` on the wrapper switches to OR.
+- The map uses the same names with a `map-` infix: `data-cell2-map-search`, `-map-filter`, and so on.
 
----
-
-## CMS — Tabs
-
-Render multiple sheet tabs as a tab interface, including aggregate tabs that merge and deduplicate rows from multiple tabs.
-
-### Markup
+## Tabs and the config sheet
 
 ```html
-<div data-cell2-tabs data-cell2-id="SHEET_ID">
-
-  <!-- Tab nav — cloned once per tab -->
-  <div class="w-tab-menu">
-    <a data-cell2-tab-link>
-      <span data-cell2-meta="tab-title"></span>
-      (<span data-cell2-tab-count></span>)
-    </a>
+<div data-cell2-tabs data-cell2-id="YOUR_SHEET_URL">
+  <div><a data-cell2-tab-link><span data-cell2-meta="tab-title"></span> (<span data-cell2-tab-count></span>)</a></div>
+  <div data-cell2-tab-content>
+    <div data-cell2-list><div data-cell2-item><h3 data-cell2-field="Title"></h3></div></div>
   </div>
-
-  <!-- Tab content — cloned once per tab -->
-  <div class="w-tab-content">
-    <div data-cell2-tab-content>
-      <div data-cell2-list>
-        <div data-cell2-item>
-          <h3 data-cell2-field="Title"></h3>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 ```
 
-Tabs require a [config sheet](#config-sheet-optional) to define which tabs appear and in what order. Without one, use `data-cell2-sheets="Tab A, Tab B"` on the wrapper as a fallback.
+One link and one pane are cloned per tab. Classes follow Webflow's Tabs (`w--current`, `w--tab-active`). Tabs are keyboard operable and set `aria-selected`.
 
-### Tabs wrapper attributes
+Tabs come from an optional **`_config`** tab, one row per tab (`data-cell2-config` renames it). Without it, name them with `data-cell2-sheets="Tab A, Tab B"`.
 
-| Attribute | Description |
+| `_config` column | Meaning |
 |---|---|
-| `data-cell2-tabs` | Required. Marks this element as a tabs wrapper. |
-| `data-cell2-id` | Required. Google Sheet ID. |
-| `data-cell2-config` | Config tab name (default: `_config`). |
-| `data-cell2-sheets` | Fallback comma-separated tab list (ignored if config sheet exists). |
-| `data-cell2-cache-ttl` | Cache duration in seconds (default: `60`). |
-| `data-cell2-accordion-trigger` | Accordion trigger selector (default: `.accordion2_top`). |
-| `data-cell2-accordion-panel` | Accordion panel selector (default: `.accordion2_bottom`). |
-| `data-cell2-accordion-icon` | Accordion icon selector (default: `.accordion2_icon`). |
+| `Tab` | Sheet tab name. Comma-separated names merge tabs into one (duplicates removed by the columns the template shows). `*` is a row of global values. |
+| `Label` | Text for `data-cell2-meta="tab-title"` / `"tab-label"`. |
+| `Description` | `data-cell2-meta="tab-description"`. |
+| `Color`, `Icon` | Map marker colour (CSS colour) and icon (emoji or short HTML) for the tab's rows. |
+| `Sort By`, `Sort Dir`, `Sort Type` | Per-tab sorting (override the list's attributes). |
+| `Active` | `TRUE`, `yes`, `1`, `x` or a tick on the tab to open first. |
+| any other column | Available to `data-cell2-tab-field="Column"` on a link or pane, and to `data-cell2-var`. |
 
-### Meta elements
+`data-cell2-tab-field`, `-tab-field-html` and `-tab-field-attr="attr:Column"` work like their `field` cousins but read the tab's `_config` row (a per-tab image or tagline).
 
-| Attribute | Description |
-|---|---|
-| `data-cell2-meta="tab-title"` | Active tab label. |
-| `data-cell2-meta="tab-label"` | Source tab label (differs in aggregate tabs). |
-| `data-cell2-meta="tab-description"` | Tab description from the config sheet. |
-| `data-cell2-tab-count` | Record count for that tab. |
+`data-cell2-var="name:Column; other:Column"` sets CSS variables `--name` from the first source holding the column: the row, the tab's config row, then the `*` row.
 
----
+**Accordions.** An item that contains a trigger and a panel opens and closes (keyboard operable, `aria-expanded`). Defaults are Relume's classes `.accordion2_top`, `.accordion2_bottom`, `.accordion2_icon`; override with `data-cell2-accordion-trigger`, `-panel`, `-icon` on the list or tabs wrapper.
 
 ## Map
 
-Render rows as markers on an interactive Leaflet map. Latitude and longitude columns are required. All other map features (popups, clustering, filtering, search) are optional.
-
-### Markup
-
 ```html
-<div data-cell2-map-wrapper
-     data-cell2-id="SHEET_ID"
-     data-cell2-sheet="Locations"
-     data-cell2-map-id="my-map">
-
-  <!-- The map renders here — must have a CSS height -->
-  <div data-cell2-map style="height: 480px"
-       data-cell2-map-tiles="carto-light"
-       data-cell2-map-center="48.1,11.6"
-       data-cell2-map-zoom="5">
-  </div>
-
-  <!-- Popup card template — hidden, cloned per popup -->
-  <div data-cell2-map-card style="display:none">
-    <strong data-cell2-field="Name"></strong>
-    <p data-cell2-field="Description"></p>
-    <a data-cell2-field-attr="href:URL" target="_blank">More info</a>
-  </div>
-
-  <!-- Filters -->
+<div data-cell2-map-wrapper data-cell2-id="YOUR_SHEET_URL" data-cell2-sheet="Locations">
   <input data-cell2-map-search placeholder="Search…">
-  <select data-cell2-map-filter="Category">
-    <option value="">All categories</option>
-  </select>
-  <button data-cell2-map-reset>Reset</button>
+  <select data-cell2-map-filter="Category"><option value="">All</option></select>
   <button data-cell2-map-locate>Near me</button>
-
-  <!-- State -->
-  <span data-cell2-count></span> markers
-  <p data-cell2-empty>No results.</p>
-
+  <button data-cell2-map-reset>Reset</button>
+  <div data-cell2-map style="height:480px" data-cell2-map-tiles="carto-light"></div>
+  <div data-cell2-map-card style="display:none">   <!-- popup template -->
+    <strong data-cell2-field="Name"></strong>
+  </div>
 </div>
 ```
 
-### Map wrapper attributes
+- Needs `Latitude` and `Longitude` columns (`data-cell2-col-lat`, `-col-lng` rename them). Comma decimals (`48,137`) are accepted; rows without valid coordinates are skipped.
+- `data-cell2-sheet` may list several tabs. With a `_config` tab, the map shows every tab it lists and `data-cell2-map-filter-tabs` builds a tab dropdown.
+- Marker colour and icon: the row's `Color` / `Icon`, then its tab's config row, then grey and a pin.
+- Popups are built on first open. Without a card, the popup shows the `Name` column.
+- Tiles: `osm` (default), `carto-light`, `carto-dark`, `esri-street`, `esri-topo`. Leaflet and MarkerCluster load from cdnjs only on pages with a map.
+- The map element needs a CSS height. Filtering refits the view unless `data-cell2-map-refit="false"`; Reset returns to the starting view.
 
-| Attribute | Description |
-|---|---|
-| `data-cell2-map-wrapper` | Required. |
-| `data-cell2-id` | Required. Google Sheet ID. |
-| `data-cell2-sheet` | Tab name or comma-separated list (default: `Sheet1`). |
-| `data-cell2-map-id` | ID used for list→map linking. |
-| `data-cell2-config` | Config tab name (default: `_config`). |
-| `data-cell2-col-lat` | Latitude column name (default: `Latitude`). |
-| `data-cell2-col-lng` | Longitude column name (default: `Longitude`). |
-| `data-cell2-col-name` | Name column — used for list linking (default: `Name`). |
-| `data-cell2-map-filter-logic` | `and` or `or` across filter dropdowns (default: `and`). |
-| `data-cell2-cache-ttl` | Cache duration in seconds (default: `60`). |
-
-### Map element attributes (`data-cell2-map`)
-
-| Attribute | Description |
-|---|---|
-| `data-cell2-map-zoom` | Initial zoom level (default: `3` desktop / `2` mobile). |
-| `data-cell2-map-center` | Initial center as `"lat,lng"` (default: `"20,0"`). |
-| `data-cell2-map-tiles` | Tile style (see below). |
-| `data-cell2-map-cluster-radius` | Cluster radius in px (default: `80`). |
-| `data-cell2-map-refit` | Refit bounds after filtering (default: `true`). |
-
-### Tile styles
-
-| Value | Map |
-|---|---|
-| `osm` | OpenStreetMap (default) |
-| `carto-light` | Carto Positron — light/minimal |
-| `carto-dark` | Carto Dark Matter |
-| `esri-street` | Esri World Street Map |
-| `esri-topo` | Esri World Topographic |
-
-### Filter controls
-
-| Attribute | Description |
-|---|---|
-| `data-cell2-map-search` | Text search input (debounced 250ms). |
-| `data-cell2-map-search-cols="A, B"` | Limit search to specific columns. |
-| `data-cell2-map-search-btn` | Triggers search immediately on click. |
-| `data-cell2-map-filter="Column"` | Dropdown, auto-populated from unique values. |
-| `data-cell2-map-filter-tabs` | Dropdown populated from config tab labels. |
-| `data-cell2-map-filter-multi` | Makes the dropdown a multi-select. |
-| `data-cell2-map-reset` | Clears all filters and resets the view. |
-| `data-cell2-map-locate` | Geolocates the user and flies to their position. |
-
-### Marker colors and icons
-
-Set `Color` (hex) and `Icon` (emoji) columns in your sheet, or define them per tab in the [config sheet](#config-sheet-optional). Resolution order — first hit wins:
-
-1. `Color` / `Icon` column in the row itself  
-2. Source tab's config row  
-3. Default (`#6b7280` / 📍)
-
-### List → map linking
-
-Click an item in a CMS list to fly the map to that marker and open its popup.
+### List and map
 
 ```html
-<!-- On the map wrapper -->
-<div data-cell2-map-wrapper data-cell2-map-id="my-map" …>
-
-<!-- On the list -->
-<div data-cell2-list data-cell2-map-ref="my-map" …>
+<div data-cell2-list data-cell2-map-ref="places" …>…</div>
+<div data-cell2-map-wrapper data-cell2-map-id="places" …>…</div>
 ```
 
----
+Clicking a list item flies to the marker with the same `Name` and opens its popup. Put `data-cell2-map-trigger` on a child to make only that child clickable. Names must be unique to link reliably. See [examples/list-and-map.html](examples/list-and-map.html).
 
-## Config sheet (optional)
+## Fields and safe HTML
 
-Add a tab named `_config` to your sheet (or specify another name with `data-cell2-config`). One row per tab, controlling display order, labels, sorting, colors, and CSS variables.
-
-| Column | Description |
+| Attribute | Effect |
 |---|---|
-| `Tab` | Sheet tab name. Comma-separated = aggregate tab. `*` = global CSS vars row. |
-| `Label` | Display name shown in tab links and meta elements. |
-| `Description` | Exposed via `data-cell2-meta="tab-description"`. |
-| `Color` | Hex color for map markers from this tab. |
-| `Icon` | Emoji or text for map markers from this tab. |
-| `Sort By` | Column name to sort this tab's list by. |
-| `Sort Dir` | `asc` or `desc`. |
-| `Sort Type` | `text`, `number`, or `date`. |
-| `Active` | `TRUE` / `✓` / `yes` / `1` — marks the default-open tab. |
-| Any other column | Available as a CSS variable source via `data-cell2-var`. |
+| `data-cell2-field="Col"` | Text. `[label](https://…)` and bare URLs become links. A cell containing HTML renders as HTML. |
+| `data-cell2-field-html="Col"` | Always rendered as HTML. |
+| `data-cell2-field-attr="attr:Col"` | Sets an attribute (`href:URL`, `src:Image`). |
+| `data-cell2-field-wrapper` | On an ancestor: removed when a field inside is blank. |
+| `data-cell2-show-if="Col"` / `-hide-if="Col"` | Element removed unless / if the cell is truthy (`true`, `yes`, `1`, `x`, tick). |
 
-### Aggregate tabs
+Cell HTML is sanitised: `script`, `style`, `link`, `meta`, `base`, `object`, `embed`, `form`, `svg`, `math` and `template` tags are removed, as are `on*` handlers and any URL attribute that is not `http`, `https`, `mailto` or `tel`. Cells can be fed by a form or a stranger, so treat them as untrusted anyway.
 
-List multiple tab names in the `Tab` column, comma-separated, to merge their rows into one tab. Duplicates are removed based on the visible fields in the item template.
+Google's CSV export drops native hyperlinks (Insert, Link); only the visible text survives. Put the URL in its own column, or write `[label](https://…)` in the cell.
 
-```
-Tab: North America, South America, Europe
-Label: All Regions
-```
+## Events and JS API
 
-### CSS variables
+`cell2:ready` bubbles from each list, tabs wrapper and map once rendered.
 
-```html
-<div data-cell2-var="marker-color:Color; region-icon:Icon"></div>
+```js
+document.addEventListener('cell2:ready', (e) => console.log(e.target, e.detail));
+// list: { records }   tabs: { tabs }   map: { records, map }  (map is the Leaflet instance)
 ```
 
-Sets `--marker-color` and `--region-icon` from the row or config. Resolution order:
+```js
+cell2site.version;            // "1.3.0"
+cell2site.init(element);      // render markup you injected later; mounted elements are skipped
+cell2site.clearCache();       // wipe memory and localStorage caches
+cell2site.maps;               // { [data-cell2-map-id]: { flyToName(name, zoom) } }
+```
 
-1. Item record column  
-2. Aggregate config row  
-3. Individual tab config row  
-4. Global `*` row
+## Caching
 
----
+Reads are cached in memory for 60 seconds and in `localStorage` for 60 times that (one hour), so return visits render instantly. Change the base with `data-cell2-cache-ttl="seconds"` on a wrapper. `?clearcache` on the page URL, or `cell2site.clearCache()`, wipes both. Concurrent requests for the same tab share one fetch.
 
-## Link rendering
+## Privacy
 
-`data-cell2-field` detects and renders links automatically — no attribute changes needed.
+The visitor's browser fetches the sheet directly from Google. cell2site has no server in the path, no analytics and no proxy. The only thing stored is the sheet's rows, in the visitor's `localStorage`, under keys starting `cell2site_cache_`. Anyone who can see your page can see the sheet's data, so share only what is public.
 
-| Cell content | Result |
+## Gotchas
+
+- **Sharing:** "Anyone with the link, Viewer". Publish to web is not required (those links work too). A private sheet shows an error telling you to share it.
+- **Column names are case-sensitive** and must match the header row. Row 1 is always the header.
+- **Do not put `_config` first** in the workbook; Google can mangle the header of the first tab.
+- **Unknown tab names:** Google silently returns the first tab. Check spelling.
+- **Published `/d/e/…` links** can only select a tab by `#gid=`, not by name.
+- **Webflow's Designer** does not run scripts; preview or publish.
+- **A map needs a height**, and lat/lng must be decimals.
+- Add `data-cell2-wrapper` when your list is a CSS grid so search and count are not grid cells.
+
+## Attribute reference
+
+All attributes are `data-cell2-…`. Details are in the sections above.
+
+**Source and shared** (on any wrapper)
+
+| Attribute | Value |
 |---|---|
-| Plain text | Rendered as text, unchanged |
-| `https://example.com` anywhere in the text | Auto-linked, opens in new tab |
-| `<a href="…">text</a>` or any HTML | Rendered as `innerHTML` |
+| `id` | Sheet ID or any Sheets URL, including `#gid=` and `/d/e/…` |
+| `sheet` | Tab name (map: comma list) |
+| `config` | Config tab name, default `_config` (tabs, map) |
+| `cache-ttl` | Seconds, default 60 |
+| `count`, `empty`, `error` | Row count, zero-result message, error message (`field="message"` inside) |
+| `loading`, `loading-count` | Custom loader; skeleton rows (default 6) |
+| `wrapper` | Scope for count, empty, error, search and filters |
 
-For full HTML control without auto-detection, use `data-cell2-field-html` explicitly.
+**Embed:** `embed` (`list`/`cards`/`table`/`map`), `embed-search` (`true`/`false`), `col-title`, `col-text`, `col-image`, `col-link`, `col-lat`, `col-lng`, `col-name` (map), plus `sort-*`, `item-limit`, `map-ref`, `map-id`, and on a map embed `map-tiles`, `map-center`, `map-zoom`, `map-cluster-radius`, `map-refit`.
 
-> **Google Sheets note:** Native hyperlinks (Insert → Link) are stripped during CSV export — only the display text survives. To pass a URL through, either store it in a separate column and use `data-cell2-field-attr="href:URL"`, or type the full HTML directly in the cell: `<a href="https://…">text</a>`.
+**List**
 
----
+| Attribute | Value |
+|---|---|
+| `list`, `item` | List container; row template |
+| `sort-col`, `sort-dir`, `sort-type` | Column; `asc`/`desc`; `text`/`number`/`date` |
+| `item-limit` | Max rows after filtering |
+| `map-ref`, `map-trigger` | Map to fly to; click target inside the item |
+| `search`, `search-cols`, `search-btn` | Input; comma columns (on the input); button |
+| `filter`, `filter-multi`, `filter-logic` | Select per column; multi-select; `and`/`or` |
+| `reset` | Clears search and filters |
+| `accordion-trigger`, `accordion-panel`, `accordion-icon` | Selectors |
 
-## Full attribute reference
+**Fields** (inside a template): `field`, `field-html`, `field-attr`, `field-wrapper`, `show-if`, `hide-if`, `var`, `meta`.
 
-### Shared (CMS + Map)
+**Tabs:** `tabs`, `sheets`, `tab-link`, `tab-content`, `tab-count`, `tab-field`, `tab-field-html`, `tab-field-attr`, `meta` = `tab-title` / `tab-label` / `tab-description`, and the accordion selectors.
 
-| Attribute | Used on | Description |
+**Map**
+
+| Attribute | On | Value |
 |---|---|---|
-| `data-cell2-id` | Wrapper | Google Sheet ID |
-| `data-cell2-config` | Wrapper | Config tab name (default: `_config`) |
-| `data-cell2-cache-ttl` | Wrapper | Cache in seconds (default: `60`) |
-| `data-cell2-field="Column"` | Any | Text / auto-linked / HTML output |
-| `data-cell2-field-html="Column"` | Any | Raw HTML output |
-| `data-cell2-field-attr="attr:Col"` | Any | Attribute output |
-| `data-cell2-field-wrapper` | Any | Ancestor removed if child field is blank |
-| `data-cell2-show-if="Column"` | Any | Removed if value is falsy |
-| `data-cell2-var="name:Col; …"` | Any | CSS custom property |
-| `data-cell2-count` | Any | Populated with visible record count |
-| `data-cell2-empty` | Any | Shown when zero records |
-| `data-cell2-error` | Any | Shown on fetch failure |
+| `map-wrapper`, `map`, `map-card` | | Container; render target (needs height); popup template |
+| `map-id` | wrapper | Name for list linking |
+| `col-lat`, `col-lng`, `col-name` | wrapper | Defaults `Latitude`, `Longitude`, `Name` |
+| `map-tiles` | map | See [Map](#map) |
+| `map-center`, `map-zoom` | map | `"lat,lng"` (default `20,0`); zoom (3 desktop, 2 mobile) |
+| `map-cluster-radius`, `map-refit` | map | Pixels (80); `false` to keep the view |
+| `map-search`, `map-search-cols`, `map-search-btn` | | As list search |
+| `map-filter`, `map-filter-tabs`, `map-filter-multi`, `map-filter-logic` | | As list filters; `-tabs` fills from tab labels |
+| `map-reset`, `map-locate` | | Reset view and filters; fly to the visitor |
+| `meta` = `tab-label` / `tab-name` | card | Source tab of the marker |
 
-### CMS only
+## Use cases
 
-| Attribute | Description |
-|---|---|
-| `data-cell2-tabs` | Tabs wrapper |
-| `data-cell2-list` | List wrapper |
-| `data-cell2-item` | Item template (cloned per row) |
-| `data-cell2-tab-link` | Tab link template |
-| `data-cell2-tab-content` | Tab pane template |
-| `data-cell2-tab-count` | Record count for that tab |
-| `data-cell2-meta="…"` | `tab-title`, `tab-label`, `tab-description` |
-| `data-cell2-sheets` | Fallback tab list (no config sheet) |
-| `data-cell2-sheet` | Tab name (standalone list) |
-| `data-cell2-sort-col` | Sort column |
-| `data-cell2-sort-dir` | `asc` / `desc` |
-| `data-cell2-sort-type` | `text` / `number` / `date` |
-| `data-cell2-item-limit` | Max records to show |
-| `data-cell2-map-ref` | Map ID to link to |
-| `data-cell2-map-trigger` | Scoped click target for map linking |
-| `data-cell2-loading` | Custom loader element |
-| `data-cell2-loading-count` | Skeleton row count (default: `6`) |
-| `data-cell2-accordion-trigger` | Accordion trigger selector |
-| `data-cell2-accordion-panel` | Accordion panel selector |
-| `data-cell2-accordion-icon` | Accordion icon selector |
+- A community garden listing plot availability
+- A band's tour dates
+- A nonprofit's volunteer opportunities map
+- A restaurant's daily specials
+- A school's staff directory
+- A conference schedule in tabs
+- A small shop's stockists map
+- A job board fed by a form
+- A food bank's pickup locations and hours
+- A neighbourhood's little free library map
+- A product changelog or release notes list
+- An FAQ as accordions
+- A real estate agent's open houses
+- A gym's class timetable, one tab per day
+- A museum's exhibitions, filtered by gallery
+- A farmers market's vendors, searchable by produce
+- A club's meeting minutes archive
+- A makerspace's equipment list with who is certified
+- A podcast episode index with show notes
+- A city's public art walking map
+- A team's "who is on call" table
+- A local events calendar, one tab per month
+- A course reading list sorted by week
+- A directory of local tradespeople, filtered by service
 
-### Map only
+## Contributing
 
-| Attribute | Description |
-|---|---|
-| `data-cell2-map-wrapper` | Map wrapper |
-| `data-cell2-map` | Map render target (needs a CSS height) |
-| `data-cell2-map-id` | ID for list→map linking |
-| `data-cell2-map-card` | Popup card template |
-| `data-cell2-col-lat` | Latitude column (default: `Latitude`) |
-| `data-cell2-col-lng` | Longitude column (default: `Longitude`) |
-| `data-cell2-col-name` | Name column (default: `Name`) |
-| `data-cell2-map-tiles` | Tile style |
-| `data-cell2-map-zoom` | Initial zoom |
-| `data-cell2-map-center` | Initial center `"lat,lng"` |
-| `data-cell2-map-cluster-radius` | Cluster radius px (default: `80`) |
-| `data-cell2-map-refit` | Refit on filter (default: `true`) |
-| `data-cell2-map-search` | Search input |
-| `data-cell2-map-search-cols` | Columns to search |
-| `data-cell2-map-search-btn` | Immediate search trigger |
-| `data-cell2-map-filter="Column"` | Filter dropdown |
-| `data-cell2-map-filter-tabs` | Filter dropdown from tab labels |
-| `data-cell2-map-filter-multi` | Multi-select filter |
-| `data-cell2-map-filter-logic` | `and` / `or` across dropdowns (default: `and`) |
-| `data-cell2-map-reset` | Reset button |
-| `data-cell2-map-locate` | Geolocate button |
-| `data-cell2-meta="tab-label"` | Source tab label (popup card) |
-| `data-cell2-meta="tab-name"` | Source tab name (popup card) |
-
----
-
-## Notes
-
-- Sheet must be **published to the web as CSV** (File → Share → Publish to web)
-- Column names are **case-sensitive** and must match the header row exactly
-- All-blank rows are skipped automatically
-- Lat/lng values must be decimals — rows with invalid coordinates are skipped by the map
-- Multiple map wrappers per page are supported
-- Append `?clearcache` to any URL to wipe in-memory and localStorage cache
-- Cache is two-layered: in-memory (default 60s) + localStorage (default 1h)
-- Leaflet and MarkerCluster are loaded automatically from cdnjs — no separate script tags needed
-- Works with Webflow, plain HTML, or any no-code platform that allows custom code
-
----
+See [CONTRIBUTING.md](CONTRIBUTING.md). Ideas are in [ROADMAP.md](ROADMAP.md).
 
 ## License
 
-[MIT](LICENSE) © 2025–2026 [muns.dev](https://muns.dev)
+[MIT](LICENSE) © 2025-2026 [muns.dev](https://muns.dev)
