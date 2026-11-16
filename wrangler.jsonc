@@ -1,0 +1,14 @@
+// cell2site.com: the static site in site/, baked into one Worker by scripts/build-site.mjs.
+// Deploy with: npx wrangler deploy
+{
+  "name": "cell2site-site",
+  "main": ".wrangler/site-worker.js",
+  "compatibility_date": "2026-11-01",
+  "build": { "command": "node scripts/build-site.mjs" },
+  "workers_dev": true,
+  // www redirects to the bare domain inside the worker.
+  "routes": [
+    { "pattern": "cell2site.com/*", "zone_name": "cell2site.com" },
+    { "pattern": "www.cell2site.com/*", "zone_name": "cell2site.com" }
+  ]
+}

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cell2site viewer</title>
+<meta name="description" content="Paste a Google Sheet link, see it as a list, cards, table or map, and get a share link or embed code.">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --muted: #5f6368; --line: #dadce0; --soft: #f6f7f8; --accent: #1a56db; --accent-fg: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14161a; --fg: #eceef1; --muted: #9aa0a6; --line: #333840; --soft: #1d2025; --accent: #6ea0ff; --accent-fg: #0b0d10; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  h2 { margin: 24px 0 12px; font-size: 1.2rem; }
+  p { margin: 0 0 12px; }
+  .muted { color: var(--muted); font-size: .9rem; }
+  a { color: var(--accent); }
+
+  details { border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
+  summary { padding: 10px 16px; cursor: pointer; font-weight: 600; }
+  form { display: grid; gap: 12px; padding: 4px 16px 16px; grid-template-columns: 1fr 1fr; }
+  .wide { grid-column: 1 / -1; }
+  label { display: grid; gap: 4px; font-size: .9rem; font-weight: 600; }
+  input, select, button, textarea { font: inherit; color: inherit; }
+  input, select, textarea { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  input[aria-invalid="true"] { border-color: #d93025; }
+  button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #error { color: #d93025; margin: 0; min-height: 1.4em; font-size: .9rem; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  #snippet { width: 100%; min-height: 80px; font: .85rem/1.4 ui-monospace, monospace; }
+  #snippet[hidden] { display: none; }
+  #title { margin-top: 24px; }
+
+  /* embed=1: the page becomes just the widget, so it can fill an iframe. */
+  .is-embed main { padding: 0; max-width: none; }
+  .is-embed .chrome { display: none; }
+
+  @media (max-width: 560px) { form { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="chrome">
+    <h1>cell2site viewer</h1>
+    <p class="muted">Paste a Google Sheet link and see it as a list, cards, table or map. Your browser fetches the sheet
+      straight from Google; nothing passes through cell2site's servers. The sheet must be shared as
+      "Anyone with the link" (Viewer).</p>
+
+    <details id="settings" open>
+      <summary>Sheet settings</summary>
+      <form id="form" novalidate>
+        <label class="wide">Sheet URL or ID
+          <input id="sheet" name="sheet" required autocomplete="off" spellcheck="false"
+                 placeholder="https://docs.google.com/spreadsheets/d/…">
+        </label>
+        <label>Tab name (optional)
+          <input id="tab" name="tab" autocomplete="off" placeholder="Sheet1">
+        </label>
+        <label>Format
+          <select id="format" name="format">
+            <option value="cards">Cards</option>
+            <option value="list">List</option>
+            <option value="table">Table</option>
+            <option value="map">Map</option>
+          </select>
+        </label>
+        <label class="wide">Title (optional)
+          <input id="titleInput" name="title" autocomplete="off">
+        </label>
+        <div class="wide"><button class="primary" type="submit">Show sheet</button></div>
+        <p id="error" class="wide" role="alert"></p>
+      </form>
+    </details>
+
+    <div id="actions" class="actions" hidden style="margin-top:16px">
+      <button type="button" data-copy="share">Copy share link</button>
+      <button type="button" data-copy="embed">Copy embed code</button>
+      <button type="button" data-copy="iframe">Copy iframe code</button>
+    </div>
+    <textarea id="snippet" readonly hidden aria-label="Code to copy"></textarea>
+    <p id="copied" class="muted" role="status"></p>
+  </div>
+
+  <h2 id="title" hidden></h2>
+  <div id="result" aria-live="polite"></div>
+</main>
+
+<!-- Same-origin copy, placed by the deploy's build step, so the viewer always runs the deployed version. -->
+<script src="../cell2site.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const CDN = 'https://cdn.jsdelivr.net/gh/munsdev/cell2site@v1.3.0/cell2site.js';
+  const VIEW = 'https://cell2site.com/view';
+  const FORMATS = ['cards', 'list', 'table', 'map'];
+  const $ = (id) => document.getElementById(id);
+
+  const params = new URLSearchParams(location.search);
+  const isEmbed = params.get('embed') === '1';
+  if (isEmbed) document.documentElement.classList.add('is-embed');
+
+  // A bare ID or any docs.google.com/spreadsheets URL; cell2site itself accepts both.
+  const validSheet = (v) => /^[\w-]{10,}$/.test(v) || /^https:\/\/docs\.google\.com\/spreadsheets\//.test(v);
+
+  const state = () => ({
+    sheet: $('sheet').value.trim(),
+    tab: $('tab').value.trim(),
+    format: $('format').value,
+    title: $('titleInput').value.trim(),
+  });
+
+  // Empty values are left out so the link stays short.
+  function query(s, extra) {
+    const q = new URLSearchParams();
+    ['sheet', 'tab', 'format', 'title'].forEach((k) => { if (s[k]) q.set(k, s[k]); });
+    Object.keys(extra || {}).forEach((k) => q.set(k, extra[k]));
+    return q.toString();
+  }
+
+  const attrEscape = (v) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+  function snippets(s) {
+    const div = '<div data-cell2-embed="' + attrEscape(s.format) + '" data-cell2-id="' + attrEscape(s.sheet) + '"' +
+      (s.tab ? ' data-cell2-sheet="' + attrEscape(s.tab) + '"' : '') + '></div>';
+    const height = s.format === 'map' ? 520 : 600;
+    return {
+      share: location.origin + location.pathname + '?' + query(s),
+      embed: div + '\n<script src="' + CDN + '"><\/script>',
+      iframe: '<iframe src="' + attrEscape(VIEW + '?' + query(s, { embed: '1' })) + '" width="100%" height="' + height +
+        '" style="border:0" loading="lazy" title="' + attrEscape(s.title || 'Google Sheet') + '"></iframe>',
+    };
+  }
+
+  function render(s) {
+    if (!window.cell2site) { $('error').textContent = 'cell2site.js failed to load.'; return; }
+    window.cell2site.clearCache();   // a viewer is for checking edits, so never show stale rows
+
+    const heading = $('title');
+    heading.textContent = s.title;   // user text: textContent only, never markup
+    heading.hidden = !s.title || isEmbed;
+
+    const box = document.createElement('div');
+    box.setAttribute('data-cell2-embed', s.format);
+    box.setAttribute('data-cell2-id', s.sheet);
+    if (s.tab) box.setAttribute('data-cell2-sheet', s.tab);
+    $('result').replaceChildren(box);
+    window.cell2site.init($('result'));
+  }
+
+  function show(s, collapse) {
+    render(s);
+    history.replaceState(null, '', location.pathname + (isEmbed ? '?' + query(s, { embed: '1' }) : '?' + query(s)));
+    $('actions').hidden = false;
+    $('snippet').hidden = true;
+    $('copied').textContent = '';
+    if (collapse) $('settings').open = false;
+  }
+
+  $('form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const s = state();
+    const bad = !validSheet(s.sheet);
+    $('sheet').setAttribute('aria-invalid', String(bad));
+    $('error').textContent = bad ? 'Enter a Google Sheets link or a sheet ID.' : '';
+    if (bad) { $('sheet').focus(); return; }
+    show(s, true);
+  });
+
+  // Clipboard needs a secure context and a user gesture; when it is refused, the code is shown
+  // selected so Ctrl+C still works.
+  document.querySelectorAll('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
+    const text = snippets(state())[button.dataset.copy];
+    const box = $('snippet');
+    box.value = text;
+    box.hidden = false;
+    try {
+      await navigator.clipboard.writeText(text);
+      $('copied').textContent = 'Copied.';
+    } catch (err) {
+      box.select();
+      $('copied').textContent = 'Copy failed. The code is selected; press Ctrl+C.';
+    }
+  }));
+
+  // Opening a shared link: fill the form, render at once, keep the form out of the way.
+  const sheet = params.get('sheet');
+  if (sheet) {
+    $('sheet').value = sheet;
+    $('tab').value = params.get('tab') || '';
+    $('titleInput').value = params.get('title') || '';
+    const format = params.get('format');
+    $('format').value = FORMATS.includes(format) ? format : 'cards';
+    if (validSheet(sheet.trim())) show(state(), true);
+    else $('error').textContent = 'The sheet in this link is not a Google Sheets URL or ID.';
+  }
+})();
+</script>
+</body>
+</html>
