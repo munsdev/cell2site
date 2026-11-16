@@ -1,5 +1,10 @@
-# Paths from the earlier Webflow site, kept so old links still land somewhere useful.
-/docs           https://github.com/munsdev/cell2site#readme  301
-/lists          /examples/list.html                          301
-/maps           /examples/map.html                           301
-/combinations   /examples/list-and-map.html                  301
+# Old paths (the Webflow site, and examples before they had their own pages) still land somewhere.
+/lists                      /examples/list/            301
+/maps                       /examples/map/             301
+/combinations               /examples/list-and-map/    301
+/examples/embed.html        /examples/embed/           301
+/examples/list.html         /examples/list/            301
+/examples/tabs.html         /examples/tabs/            301
+/examples/map.html          /examples/map/             301
+/examples/list-and-map.html /examples/list-and-map/    301
+/examples/webflow.md        /docs/webflow/             301

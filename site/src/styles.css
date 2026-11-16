@@ -1,0 +1,146 @@
+/* cell2site.com design system. Tailwind v4; tokens carried over from the original Webflow site:
+   Ubuntu / Ubuntu Mono, "fruit salad" green, "butterfly bush" purple, near-black ink, and the
+   102×20px spreadsheet-cell grid that runs behind the hero and call-to-action sections. */
+@import "tailwindcss";
+@source "../";
+@source "../../scripts/site";
+
+@font-face { font-family: Ubuntu; font-weight: 400; font-display: swap; src: url(/assets/fonts/ubuntu-400.woff2) format("woff2"); }
+@font-face { font-family: Ubuntu; font-weight: 500; font-display: swap; src: url(/assets/fonts/ubuntu-500.woff2) format("woff2"); }
+@font-face { font-family: Ubuntu; font-weight: 700; font-display: swap; src: url(/assets/fonts/ubuntu-700.woff2) format("woff2"); }
+@font-face { font-family: "Ubuntu Mono"; font-weight: 400; font-display: swap; src: url(/assets/fonts/ubuntu-mono-400.woff2) format("woff2"); }
+@font-face { font-family: "Ubuntu Mono"; font-weight: 700; font-display: swap; src: url(/assets/fonts/ubuntu-mono-700.woff2) format("woff2"); }
+
+@theme {
+  --font-sans: Ubuntu, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Ubuntu Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --color-ink: #050407;
+  --color-paper: #ffffff;
+  --color-green: #479e6a;
+  --color-green-dark: #387e54;
+  --color-green-darker: #1c3f2a;
+  --color-green-light: #7ebb96;
+  --color-green-lighter: #daebe1;
+  --color-green-lightest: #ecf5f0;
+  --color-purple: #645189;
+  --color-purple-dark: #50406d;
+  --color-purple-darker: #282036;
+  --color-purple-light: #9285ac;
+  --color-purple-lightest: #efedf3;
+  --color-line: #d9d9d9;
+  --color-muted: #504f51;
+
+  --radius-cell: 0.5rem;
+}
+
+/* Theme roles. Pages use these, never raw palette values, so dark mode is one block. */
+:root {
+  --bg: var(--color-paper);
+  --fg: var(--color-ink);
+  --muted: var(--color-muted);
+  --line: var(--color-line);
+  --surface: #fafafa;
+  --border: var(--color-ink);
+  --accent: var(--color-green-dark);
+  --grid-line: rgb(0 0 0 / 0.12);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e0d10;
+    --fg: #f2f2f2;
+    --muted: #b4b3b4;
+    --line: #2e2c31;
+    --surface: #17161a;
+    --border: #f2f2f2;
+    --accent: var(--color-green-light);
+    --grid-line: rgb(255 255 255 / 0.08);
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  html { background: var(--bg); color: var(--fg); scroll-padding-top: 5rem; }
+  body { font-family: var(--font-sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, h4 { font-family: var(--font-mono); font-weight: 400; letter-spacing: -0.01em; line-height: 1.15; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--color-green); outline-offset: 2px; }
+  ::selection { background: var(--color-green-lighter); color: var(--color-ink); }
+}
+
+@utility bg-cells {
+  /* One spreadsheet cell per tile: a 1px line on the right and bottom edges. */
+  background-image:
+    linear-gradient(to right, transparent 101px, var(--grid-line) 101px),
+    linear-gradient(to bottom, transparent 19px, var(--grid-line) 19px);
+  background-size: 102px 20px;
+}
+@utility bg-cells-light {
+  --grid-line: rgb(255 255 255 / 0.14);
+}
+
+@layer components {
+  .wrap { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
+  .eyebrow { @apply inline-flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider; color: var(--accent); }
+  /* A cell reference ("A1") before a heading — the site's recurring spreadsheet motif. */
+  .cellref { @apply inline-grid min-w-9 place-items-center rounded-sm border px-1.5 font-mono text-xs; border-color: currentColor; }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius-cell)] border-2 px-5 py-2.5 font-medium no-underline transition;
+    border-color: var(--border); background: var(--bg); color: var(--fg);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 3px 3px 0 var(--border); }
+  .btn-primary { background: var(--color-green); border-color: var(--color-green-darker); color: #fff; }
+  .btn-primary:hover { box-shadow: 3px 3px 0 var(--color-green-darker); }
+  .btn-sm { @apply px-3 py-1.5 text-sm; }
+  .btn-on-color { border-color: #fff; background: transparent; color: #fff; }
+  .btn-on-color:hover { box-shadow: 3px 3px 0 #fff; }
+
+  .card { @apply rounded-[var(--radius-cell)] border-2 p-5; border-color: var(--border); background: var(--bg); }
+  .code {
+    @apply overflow-x-auto rounded-[var(--radius-cell)] border-2 p-4 font-mono text-[15px] leading-relaxed;
+    border-color: var(--border); background: var(--surface);
+  }
+  .field { @apply grid gap-1 text-sm font-medium; }
+  .field input, .field select {
+    @apply rounded-[var(--radius-cell)] border-2 px-3 py-2 font-sans text-base;
+    border-color: var(--border); background: var(--bg); color: var(--fg);
+  }
+  .chip { @apply rounded-full border-2 px-4 py-1.5 text-sm font-medium; border-color: var(--border); background: var(--bg); color: var(--fg); }
+  .chip[aria-selected="true"] { background: var(--fg); color: var(--bg); }
+
+  /* Markdown pages (README, CHANGELOG): styled here, since their HTML carries no classes. */
+  .prose { @apply max-w-none text-[17px]; }
+  .prose > * + * { margin-top: 1rem; }
+  .prose h1 { @apply text-4xl sm:text-5xl; }
+  .prose h2 { @apply mt-14 border-t-2 pt-6 text-3xl; border-color: var(--line); }
+  .prose h3 { @apply mt-8 text-xl font-bold; }
+  .prose a { @apply underline decoration-2 underline-offset-2; }
+  .prose ul { @apply list-disc pl-6; }
+  .prose ol { @apply list-decimal pl-6; }
+  .prose li + li { margin-top: .25rem; }
+  .prose code { @apply rounded px-1 font-mono text-[0.95em]; background: var(--surface); border: 1px solid var(--line); }
+  .prose pre { @apply overflow-x-auto rounded-[var(--radius-cell)] border-2 p-4 leading-relaxed; border-color: var(--border); background: var(--surface); }
+  .prose pre code { @apply border-0 bg-transparent p-0; }
+  .prose table { @apply block w-full overflow-x-auto border-collapse text-[15px]; }
+  .prose th, .prose td { @apply border px-3 py-2 text-left align-top; border-color: var(--line); }
+  .prose th { background: var(--surface); }
+  .prose blockquote { @apply border-l-4 pl-4; border-color: var(--color-green); color: var(--muted); }
+  .prose hr { border-color: var(--line); }
+
+  /* The home page's tabs demo is built from the library's own tabs markup. */
+  .demo-tabs nav { @apply mb-4 flex flex-wrap gap-2; }
+  .demo-tabs [role=tab] { @apply rounded-md border-b-4 px-3 py-1.5 font-medium no-underline; border-color: var(--tab, transparent); color: var(--fg); }
+  .demo-tabs [role=tab].w--current { background: var(--surface); }
+  .demo-tabs .row { @apply grid border-b py-2.5 pl-5 relative; border-color: var(--line); }
+  .demo-tabs .row::before { content: ""; @apply absolute left-0 top-4 size-2.5 rounded-full; background: var(--dot, var(--muted)); }
+  .demo-tabs .row small { color: var(--muted); }
+
+  /* External content stays out until the visitor allows it (see consent.js). */
+  html:not(.ext-ok) [data-ext] { display: none !important; }
+  html.ext-ok [data-ext-placeholder] { display: none !important; }
+
+  /* embed=1 on the viewer: only the widget, so it can fill someone else's iframe. */
+  html.is-embed [data-chrome] { display: none !important; }
+}

@@ -1,42 +1,26 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>cell2site example: tabs</title>
-  <link rel="stylesheet" href="example.css">
-</head>
-<body>
-  <p class="back"><a href="/">cell2site</a> / examples / tabs · <a href="https://docs.google.com/spreadsheets/d/1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ/edit">open the sheet</a></p>
-  <!-- Uses the public demo sheet. To use yours, replace the data-cell2-id value with your sheet's
-       address-bar URL (shared as "Anyone with the link") and match the column names. -->
-
-  <!-- Tabs come from the sheet's _config tab: order, labels, sort, and a merged "Everything" tab.
-       Built on plain HTML here; on Webflow put the same attributes on the native Tabs element. -->
-  <style>
-    [role=tab] { display: inline-block; padding: .4em .8em; border-radius: 8px; border-bottom: 3px solid var(--accent, transparent); }
-    [role=tab].w--current { background: color-mix(in srgb, currentColor 10%, transparent); }
-  </style>
-  <div data-cell2-tabs data-cell2-id="1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ">
-    <nav class="toolbar">
-      <a data-cell2-tab-link data-cell2-var="accent:Color">
-        <span data-cell2-meta="tab-title"></span> (<span data-cell2-tab-count></span>)
-      </a>
-    </nav>
-    <div>
-      <section data-cell2-tab-content>
-        <p data-cell2-meta="tab-description"></p>
-        <div data-cell2-list>
-          <article class="card" data-cell2-item data-cell2-var="accent:Color">
-            <h3><span data-cell2-field="Name"></span></h3>
-            <p data-cell2-field="Description"></p>
-            <span class="tag"><span data-cell2-field="City"></span> · <span data-cell2-meta="tab-label"></span></span>
-          </article>
+<!-- Tabs come from the sheet's _config tab: order, labels, sort, and a merged "Everything" tab.
+     On Webflow, put the same attributes on the native Tabs element. -->
+<style>
+  .t-nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+  .t-nav [role=tab] { padding: .35em .8em; border-radius: 8px; border-bottom: 4px solid var(--accent, transparent); color: inherit; text-decoration: none; cursor: pointer; }
+  .t-nav [role=tab].w--current { background: rgb(127 127 127 / .15); }
+  .t-row { padding: .6rem 0; border-bottom: 1px solid rgb(127 127 127 / .3); }
+</style>
+<div data-cell2-tabs data-cell2-id="https://docs.google.com/spreadsheets/d/1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ/edit">
+  <nav class="t-nav">
+    <a data-cell2-tab-link data-cell2-var="accent:Color">
+      <span data-cell2-meta="tab-title"></span> (<span data-cell2-tab-count></span>)
+    </a>
+  </nav>
+  <div>
+    <section data-cell2-tab-content>
+      <p data-cell2-meta="tab-description"></p>
+      <div data-cell2-list>
+        <div class="t-row" data-cell2-item>
+          <b data-cell2-field="Name"></b> · <span data-cell2-field="City"></span>
+          <small>(<span data-cell2-meta="tab-label"></span>)</small>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   </div>
-
-  <script src="../cell2site.js"></script>
-</body>
-</html>
+</div>

@@ -1,38 +1,21 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>cell2site example: map</title>
-  <link rel="stylesheet" href="example.css">
-</head>
-<body>
-  <p class="back"><a href="/">cell2site</a> / examples / map · <a href="https://docs.google.com/spreadsheets/d/1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ/edit">open the sheet</a></p>
-  <!-- Uses the public demo sheet. To use yours, replace the data-cell2-id value with your sheet's
-       address-bar URL (shared as "Anyone with the link") and match the column names. -->
-
-  <!-- With a _config tab the map plots every tab it lists, coloured and iconed per tab. -->
-  <div data-cell2-map-wrapper data-cell2-id="1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ">
-    <div class="toolbar">
-      <input data-cell2-map-search placeholder="Search places…" aria-label="Search">
-      <select data-cell2-map-filter-tabs aria-label="Type"><option value="">All types</option></select>
-      <select data-cell2-map-filter="City" aria-label="City"><option value="">All cities</option></select>
-      <button data-cell2-map-locate>Near me</button>
-      <button data-cell2-map-reset>Reset</button>
-      <span><span data-cell2-count></span> places</span>
-    </div>
-    <div data-cell2-map data-cell2-map-tiles="light" style="height:480px;border-radius:10px"></div>
-
-    <!-- Popup template, cloned per marker when it is first opened. -->
-    <div data-cell2-map-card style="display:none">
-      <strong data-cell2-field="Name"></strong>
-      <div class="tag"><span data-cell2-field="City"></span> · <span data-cell2-meta="tab-label"></span></div>
-      <p data-cell2-field="Description"></p>
-      <a data-cell2-field-wrapper data-cell2-field-attr="href:Website" target="_blank" rel="noopener">Website</a>
-    </div>
-    <p data-cell2-empty style="display:none">No places match.</p>
+<!-- With a _config tab the map plots every tab it lists, coloured and iconed per tab. -->
+<div data-cell2-map-wrapper data-cell2-id="https://docs.google.com/spreadsheets/d/1wlr72cfR-Z0MlFsB_MxgjGVcd2UOv6ffdFyhTLpIzlQ/edit">
+  <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1rem">
+    <input data-cell2-map-search placeholder="Search places…" aria-label="Search">
+    <select data-cell2-map-filter-tabs aria-label="Type"><option value="">All types</option></select>
+    <select data-cell2-map-filter="City" aria-label="City"><option value="">All cities</option></select>
+    <button data-cell2-map-locate>Near me</button>
+    <button data-cell2-map-reset>Reset</button>
+    <span><span data-cell2-count></span> places</span>
   </div>
+  <div data-cell2-map data-cell2-map-tiles="light" style="height:480px;border-radius:8px"></div>
 
-  <script src="../cell2site.js"></script>
-</body>
-</html>
+  <!-- Popup template, cloned per marker when it is first opened. -->
+  <div data-cell2-map-card style="display:none">
+    <strong data-cell2-field="Name"></strong>
+    <div><span data-cell2-field="City"></span> · <span data-cell2-meta="tab-label"></span></div>
+    <p data-cell2-field="Description"></p>
+    <a data-cell2-field-wrapper data-cell2-field-attr="href:Website" target="_blank" rel="noopener">Website</a>
+  </div>
+  <p data-cell2-empty style="display:none">No places match.</p>
+</div>
