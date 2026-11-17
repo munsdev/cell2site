@@ -159,9 +159,10 @@ const OPERATOR = {
   name: 'Casey Muns',
   place: 'Munich, Germany',
   email: 'casey@muns.dev',
-  // Street address lines, required by § 5 DDG. Never fill this with a guess: until the real
-  // address is set, the Impressum shows the city only.
-  address: ['c/o Autorenglück #79979', 'Albert-Einstein-Straße 47', '02977 Hoyerswerda', 'Germany'],
+  // Must match Voodoo's LEGAL_* values (instances/munsdev/instance.json in voodoo-v4-engine), so
+  // every site Casey runs names the same operator, address and VAT ID.
+  address: ['c/o Autorenglück #79979', 'Albert-Einstein-Straße 47', '02977 Hoyerswerda', 'Deutschland'],
+  vatId: 'DE355846430',
 };
 
 function legal(path, title, description, html) {
@@ -177,6 +178,8 @@ function impressum() {
 <p>${o.name}<br>${o.address ? o.address.map(esc).join('<br>') : esc(o.place)}</p>
 <h2 id="contact">Contact</h2>
 <p>Email: <a href="mailto:${o.email}">${o.email}</a></p>
+<h2 id="vat">VAT ID</h2>
+<p>VAT identification number according to § 27a UStG: ${o.vatId}</p>
 <h2 id="responsible">Responsible for content</h2>
 <p>${o.name}, address as above (§ 18 (2) MStV).</p>
 <h2 id="open-source">Open source</h2>
@@ -194,7 +197,7 @@ function privacy() {
 <h2 id="hosting">Hosting</h2>
 <p>The site is served by Cloudflare, Inc. (101 Townsend St, San Francisco, CA 94107, USA). To deliver pages and protect against abuse, Cloudflare processes your IP address, the requested address, time, browser type and similar request data. Legal basis: Art. 6 (1) (f) GDPR (legitimate interest in a secure, working website). Cloudflare is certified under the EU–US Data Privacy Framework.</p>
 <h2 id="consent">Your consent choice</h2>
-<p>When you choose in the banner, your choice is stored in your browser's local storage (key <code>c2s-consent</code>) so you are not asked on every page. This is necessary for the site and needs no consent (§ 25 (2) TDDDG). To be able to prove consent, a record is sent to our consent log (a Cloudflare Worker): the choice, the banner version, the time, your country, your browser's user agent and a one-way hash of your IP address, not the IP address itself. Legal basis: Art. 6 (1) (c) and (f) GDPR. The record is kept as long as it is needed to demonstrate consent.</p>
+<p>When you choose in the banner, your choice is stored in your browser's local storage (key <code>c2s-consent</code>) so you are not asked on every page. This is necessary for the site and needs no consent (§ 25 (2) TDDDG). To be able to prove consent, a record is sent to our consent log (a Cloudflare Worker): the choice, the banner version, the time, your country, and your browser's user agent. Neither your IP address nor anything derived from it is stored. Legal basis: Art. 6 (1) (c) and (f) GDPR. The record is kept as long as it is needed to demonstrate consent.</p>
 <h2 id="external-media">External media (only with your consent)</h2>
 <p>The live demos, the examples and the viewer read spreadsheet data and maps from third parties. They load only after you allow "External media", and you can withdraw that at any time under <button type="button" data-consent-open class="underline">Cookie settings</button>. When they load, your browser contacts these providers directly, which receive your IP address and browser details:</p>
 <ul>

@@ -33,7 +33,7 @@
     return libLoading;
   }
 
-  // The record proves consent (version, time, categories); the logger stores no IP, only a hash.
+  // The record proves consent (version, time, categories); the logger stores nothing derived from the IP.
   function save(categories, action) {
     choice = { version: VERSION, timestamp: Date.now(), categories: categories };
     try { localStorage.setItem(KEY, JSON.stringify(choice)); } catch (e) { /* private mode: asked again next visit */ }
