@@ -84,6 +84,8 @@ const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 export default {
   fetch(request) {
     const url = new URL(request.url);
+    // template.<domain> held the old Webflow templates; the examples replace them.
+    if (/^(www\.)?template\./.test(url.hostname)) return Response.redirect('https://cell2site.com/examples/', 301);
     // www.<domain> redirects to the bare domain, path intact; workers.dev serves previews.
     const bare = url.hostname.replace(/^www\./, '');
     if (bare !== url.hostname && HOSTS.includes(bare)) {
