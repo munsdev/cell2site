@@ -161,7 +161,7 @@ const OPERATOR = {
   email: 'casey@muns.dev',
   // Street address lines, required by § 5 DDG. Never fill this with a guess: until the real
   // address is set, the Impressum shows the city only.
-  address: null,
+  address: ['c/o Autorenglück #79979', 'Albert-Einstein-Straße 47', '02977 Hoyerswerda', 'Germany'],
 };
 
 function legal(path, title, description, html) {

@@ -6,10 +6,12 @@
   "compatibility_date": "2026-11-01",
   "build": { "command": "node scripts/build-site.mjs" },
   "workers_dev": true,
-  // Every host but cell2site.com redirects to it inside the worker.
+  // Both domains serve the site; www.<domain> redirects to the bare domain inside the worker.
   "routes": [
     { "pattern": "cell2site.com/*", "zone_name": "cell2site.com" },
     { "pattern": "www.cell2site.com/*", "zone_name": "cell2site.com" },
+    { "pattern": "cell2.site/*", "zone_name": "cell2.site" },
+    { "pattern": "www.cell2.site/*", "zone_name": "cell2.site" },
     { "pattern": "cell2.site", "custom_domain": true },
     { "pattern": "www.cell2.site", "custom_domain": true }
   ]
