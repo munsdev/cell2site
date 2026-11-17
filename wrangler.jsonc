@@ -13,6 +13,11 @@
     { "pattern": "cell2.site/*", "zone_name": "cell2.site" },
     { "pattern": "www.cell2.site/*", "zone_name": "cell2.site" },
     { "pattern": "cell2.site", "custom_domain": true },
-    { "pattern": "www.cell2.site", "custom_domain": true }
+    { "pattern": "www.cell2.site", "custom_domain": true },
+    // The old Webflow templates subdomains: redirected to /examples/.
+    { "pattern": "template.cell2.site", "custom_domain": true },
+    { "pattern": "www.template.cell2.site", "custom_domain": true },
+    { "pattern": "template.cell2site.com", "custom_domain": true },
+    { "pattern": "www.template.cell2site.com", "custom_domain": true }
   ]
 }
