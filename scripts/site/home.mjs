@@ -57,8 +57,7 @@ const STEPS = [
 ];
 
 const SHOWCASE = [
-  // No link until its Voodoo copy is back on the portfolio: nothing here links to Webflow.
-  ['List', 'EPICburger', '/assets/showcase-epicburger.png', null,
+  ['List', 'EPICburger', '/assets/showcase-epicburger.png', 'https://portfolio.muns.dev/epic-burger/',
     'The menu of a (fictional) burger restaurant. Each tab of the menu is a tab in the spreadsheet, and the opening hours in the footer come from its "Hours" tab.'],
   ['Map + list', 'The Heritage Atlas', '/assets/showcase-heritage-atlas.png', 'https://theheritageatlas.com/',
     'Over 1,000 UNESCO World Heritage sites from one spreadsheet, on a searchable, filterable map and in a categorised, tabbed list.'],
