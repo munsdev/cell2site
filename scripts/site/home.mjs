@@ -57,7 +57,8 @@ const STEPS = [
 ];
 
 const SHOWCASE = [
-  ['List', 'EPICburger', '/assets/showcase-epicburger.png', 'https://epic-burger.webflow.io/',
+  // No link until its Voodoo copy is back on the portfolio: nothing here links to Webflow.
+  ['List', 'EPICburger', '/assets/showcase-epicburger.png', null,
     'The menu of a (fictional) burger restaurant. Each tab of the menu is a tab in the spreadsheet, and the opening hours in the footer come from its "Hours" tab.'],
   ['Map + list', 'The Heritage Atlas', '/assets/showcase-heritage-atlas.png', 'https://theheritageatlas.com/',
     'Over 1,000 UNESCO World Heritage sites from one spreadsheet, on a searchable, filterable map and in a categorised, tabbed list.'],
@@ -159,7 +160,7 @@ export function home(version) {
           <span class="font-mono text-sm text-[var(--muted)]">${tag}</span>
           <h3 class="mt-1 text-2xl">${name}</h3>
           <p class="mt-2 flex-1 text-[var(--muted)]">${text}</p>
-          <a class="btn btn-sm mt-5 self-start" href="${url}">Visit the site</a>
+          ${url ? `<a class="btn btn-sm mt-5 self-start" href="${url}">Visit the site</a>` : ''}
         </div>
       </article>`).join('')}
     </div>
