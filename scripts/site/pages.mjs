@@ -102,11 +102,11 @@ function examplesIndex() {
   <p class="mt-3 max-w-2xl text-lg text-[var(--muted)]">Each example runs live against the <a href="${SITE.demoSheet}">public demo sheet</a>, with its code underneath to copy.</p>
   <ul class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
     ${EXAMPLES.map(([key, title, description], i) => `<li><a href="/examples/${key}/" class="card group block h-full text-[var(--fg)] no-underline hover:shadow-[4px_4px_0_var(--border)]">
-      <span class="cellref text-green-dark dark:text-green-light">B${i + 2}</span>
+      <span class="cellref text-green-dark">B${i + 2}</span>
       <h2 class="mt-3 text-2xl group-hover:underline">${esc(title)}</h2>
       <p class="mt-1 text-[var(--muted)]">${esc(description)}</p></a></li>`).join('')}
     <li><a href="/docs/webflow/" class="card group block h-full text-[var(--fg)] no-underline hover:shadow-[4px_4px_0_var(--border)]">
-      <span class="cellref text-purple dark:text-purple-light">W1</span>
+      <span class="cellref text-purple">W1</span>
       <h2 class="mt-3 text-2xl group-hover:underline">Webflow, step by step</h2>
       <p class="mt-1 text-[var(--muted)]">Where the script goes, and how to add the attributes in the Designer.</p></a></li>
   </ul>
@@ -136,7 +136,7 @@ function viewer() {
       <div class="flex flex-wrap items-center gap-3 sm:col-span-2">
         <button class="btn btn-primary" type="submit">Show sheet</button>
         <button class="btn" type="button" id="try-demo">Try the demo sheet</button>
-        <p id="error" class="text-sm font-medium text-red-700 dark:text-red-400" role="alert"></p>
+        <p id="error" class="text-sm font-medium text-red-700" role="alert"></p>
       </div>
     </form>
     <div id="actions" hidden class="mt-6 flex flex-wrap gap-2">

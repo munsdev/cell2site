@@ -55,22 +55,22 @@ ${p.noindex ? '<meta name="robots" content="noindex">' : ''}
 function header(p) {
   const link = ([href, label]) => {
     const current = p.path.startsWith(href);
-    return `<a href="${href}" class="rounded-md px-3 py-2 font-medium no-underline hover:bg-[var(--surface)] ${current ? 'text-[var(--fg)] underline decoration-2 decoration-green underline-offset-8' : 'text-[var(--muted)]'}"${current ? ' aria-current="page"' : ''}>${label}</a>`;
+    return `<a href="${href}" class="rounded-md px-3 py-2 font-medium no-underline hover:text-green-light ${current ? 'text-green-light' : 'text-[var(--fg)]'}"${current ? ' aria-current="page"' : ''}>${label}</a>`;
   };
   return `
 <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:bg-[var(--bg)] focus:px-3 focus:py-2">Skip to content</a>
-<header data-chrome class="sticky top-0 z-40 border-b-2 border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur">
+<header data-chrome class="scheme-black sticky top-0 z-40">
   <div class="wrap flex h-16 items-center justify-between gap-4">
     <a href="/" class="flex items-center gap-2.5 font-mono text-xl text-[var(--fg)] no-underline">${ICON.logo}<span>cell<span class="text-green">2</span>site</span></a>
     <nav aria-label="Main" class="hidden items-center gap-1 md:flex">
       ${NAV.map(link).join('')}
-      <a href="${SITE.repo}" class="ml-2 inline-flex items-center gap-2 rounded-md px-3 py-2 font-medium text-[var(--muted)] no-underline hover:bg-[var(--surface)]">${ICON.github}<span>GitHub</span></a>
+      <a href="${SITE.repo}" class="btn btn-sm ml-3">${ICON.github}<span>GitHub</span></a>
     </nav>
     <details class="relative md:hidden">
       <summary class="btn btn-sm list-none cursor-pointer" aria-label="Menu">Menu</summary>
       <nav aria-label="Main" class="card absolute right-0 mt-2 grid w-56 gap-1 p-2 shadow-[4px_4px_0_var(--border)]">
         ${NAV.map(link).join('')}
-        <a href="${SITE.repo}" class="inline-flex items-center gap-2 rounded-md px-3 py-2 font-medium text-[var(--muted)] no-underline">${ICON.github} GitHub</a>
+        <a href="${SITE.repo}" class="inline-flex items-center gap-2 rounded-md px-3 py-2 font-medium text-[var(--fg)] no-underline">${ICON.github} GitHub</a>
       </nav>
     </details>
   </div>
@@ -82,7 +82,7 @@ function footer() {
     <ul class="grid gap-2">${links.map((l) => `<li>${l}</li>`).join('')}</ul></div>`;
   const a = (href, label, ext) => `<a href="${href}" class="text-white/80 no-underline hover:text-white hover:underline">${label}${ext ? ' ' + ICON.external.replace('class="', 'class="inline ') : ''}</a>`;
   return `
-<footer data-chrome class="bg-cells bg-cells-light bg-ink text-white">
+<footer data-chrome class="scheme-black">
   <div class="wrap grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
     <div class="max-w-xs">
       <a href="/" class="flex items-center gap-2.5 font-mono text-xl text-white no-underline">${ICON.logo}<span>cell<span class="text-green-light">2</span>site</span></a>

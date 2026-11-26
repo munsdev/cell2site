@@ -46,19 +46,21 @@
   --grid-line: rgb(0 0 0 / 0.12);
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e0d10;
-    --fg: #f2f2f2;
-    --muted: #b4b3b4;
-    --line: #2e2c31;
-    --surface: #17161a;
-    --border: #f2f2f2;
-    --accent: var(--color-green-light);
-    --grid-line: rgb(255 255 255 / 0.08);
-    color-scheme: dark;
-  }
-}
+/* One look in every colour scheme, as on the original Webflow site: its colour comes from the
+   green, purple and black bands, which a dark mode flattened into one dark page. dark: utilities
+   only apply under an explicit .dark class, which nothing sets. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* The Webflow site's colour schemes. A band sets the roles; whatever is inside follows them.
+   The texture comes from a bg-cells-* utility: a background-image here, outside any layer,
+   would win over it and hide the grid. */
+.scheme-green { --bg: var(--color-green); --fg: #fff; --muted: rgb(255 255 255 / 0.88); --border: var(--color-ink); --accent: #fff; --grid-line: rgb(0 0 0 / 0.18);
+  background-color: var(--color-green); color: var(--fg); }
+.scheme-purple { --bg: var(--color-purple-dark); --fg: #fff; --muted: rgb(255 255 255 / 0.88); --border: var(--color-ink); --accent: #fff; --grid-line: rgb(0 0 0 / 0.18);
+  background-color: var(--color-purple); color: var(--fg); }
+.scheme-black { --bg: var(--color-ink); --fg: #fff; --muted: rgb(255 255 255 / 0.75); --border: #fff; --accent: var(--color-green-light); --grid-line: rgb(255 255 255 / 0.18);
+  --surface: #1e1d1f; background-color: var(--color-ink); color: var(--fg); }
+.scheme-light { background-image: linear-gradient(315deg, var(--color-line), #fff); }
 
 @layer base {
   html { background: var(--bg); color: var(--fg); scroll-padding-top: 5rem; }
@@ -76,6 +78,21 @@
     linear-gradient(to bottom, transparent 19px, var(--grid-line) 19px);
   background-size: 102px 20px;
 }
+/* The purple bands: the original's diagonal fade from dark purple, over the cell grid. */
+@utility bg-cells-purple {
+  background-image:
+    linear-gradient(225deg, var(--color-purple-dark), rgb(100 81 137 / 0)),
+    linear-gradient(to right, transparent 101px, var(--grid-line) 101px),
+    linear-gradient(to bottom, transparent 19px, var(--grid-line) 19px);
+  background-size: auto, 102px 20px, 102px 20px;
+}
+@utility bg-cells-green {
+  background-image:
+    linear-gradient(135deg, rgb(71 158 106 / 0.1), var(--color-green)),
+    linear-gradient(to right, transparent 101px, var(--grid-line) 101px),
+    linear-gradient(to bottom, transparent 19px, var(--grid-line) 19px);
+  background-size: auto, 102px 20px, 102px 20px;
+}
 @utility bg-cells-light {
   --grid-line: rgb(255 255 255 / 0.14);
 }
@@ -86,21 +103,28 @@
   /* A cell reference ("A1") before a heading — the site's recurring spreadsheet motif. */
   .cellref { @apply inline-grid min-w-9 place-items-center rounded-sm border px-1.5 font-mono text-xs; border-color: currentColor; }
 
+  /* The original site's button: white, a dark 2px edge, a light top bevel and a darker bottom one.
+     It is the same on every band, which is what made the coloured bands read as one site. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius-cell)] border-2 px-5 py-2.5 font-medium no-underline transition;
-    border-color: var(--border); background: var(--bg); color: var(--fg);
+    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius-cell)] border-2 px-6 py-3 font-medium no-underline transition;
+    border-color: var(--color-ink); background: #fff; color: var(--color-ink);
+    box-shadow: inset 0 4px 0 0 rgb(255 255 255 / 0.2), inset 0 -5px 0 0 rgb(5 4 7 / 0.15), 0 2px 2px 0 rgb(5 4 7 / 0.15);
   }
-  .btn:hover { transform: translateY(-1px); box-shadow: 3px 3px 0 var(--border); }
-  .btn-primary { background: var(--color-green); border-color: var(--color-green-darker); color: #fff; }
-  .btn-primary:hover { box-shadow: 3px 3px 0 var(--color-green-darker); }
-  .btn-sm { @apply px-3 py-1.5 text-sm; }
-  .btn-on-color { border-color: #fff; background: transparent; color: #fff; }
-  .btn-on-color:hover { box-shadow: 3px 3px 0 #fff; }
+  .btn:hover { box-shadow: inset 0 4px 0 0 rgb(255 255 255 / 0.2), inset 0 -5px 0 0 rgb(5 4 7 / 0.15), 0 4px 4px 0 rgb(5 4 7 / 0.15); }
+  .btn-primary { background: var(--color-green); color: #fff; }
+  .btn-secondary { background: #f2f2f2; }
+  .btn-sm { @apply px-5 py-2 text-sm; }
+  .btn-on-color { }
 
-  .card { @apply rounded-[var(--radius-cell)] border-2 p-5; border-color: var(--border); background: var(--bg); }
+  .card {
+    --bg: #fff; --fg: var(--color-ink); --muted: var(--color-muted); --border: var(--color-ink); --accent: var(--color-green-dark); --surface: #fafafa;
+    @apply rounded-[var(--radius-cell)] border-2 p-5; border-color: var(--border); background: var(--bg); color: var(--fg);
+  }
+  .scheme-purple .card { --bg: var(--color-line); --surface: #f2f2f2; }
+  .card-lg { border-radius: 1rem; }
   .code {
     @apply overflow-x-auto rounded-[var(--radius-cell)] border-2 p-4 font-mono text-[15px] leading-relaxed;
-    border-color: var(--border); background: var(--surface);
+    border-color: var(--border); background: var(--surface); color: var(--fg);
   }
   .field { @apply grid gap-1 text-sm font-medium; }
   .field input, .field select {
@@ -109,6 +133,8 @@
   }
   .chip { @apply rounded-full border-2 px-4 py-1.5 text-sm font-medium; border-color: var(--border); background: var(--bg); color: var(--fg); }
   .chip[aria-selected="true"] { background: var(--fg); color: var(--bg); }
+  .scheme-black .chip { background: transparent; }
+  .scheme-black .chip[aria-selected="true"] { background: #fff; color: var(--color-ink); }
 
   /* Markdown pages (README, CHANGELOG): styled here, since their HTML carries no classes. */
   .prose { @apply max-w-none text-[17px]; }

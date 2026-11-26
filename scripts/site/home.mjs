@@ -82,19 +82,19 @@ export function home(version) {
     description: 'Turn a Google Sheet into lists, cards, tables and maps on any website. One script tag, no server, no API key. Free and open source.',
     scripts: ['/assets/home.js'],
     body: `
-<section class="bg-cells relative overflow-hidden border-b-2 border-[var(--border)] bg-gradient-to-br from-green-lightest/40 to-green/25 dark:from-green-darker/40 dark:to-green-darker/80">
+<section class="scheme-green bg-cells-green relative overflow-hidden">
   <div class="wrap grid grid-cols-1 gap-12 py-20 lg:grid-cols-[1.1fr_1fr] lg:py-28">
     <div>
       <span class="eyebrow"><span class="cellref">A1</span> Open source · MIT</span>
       <h1 class="mt-5 text-5xl sm:text-6xl">Turn Google Sheets into live websites</h1>
       <p class="mt-6 max-w-xl text-lg text-[var(--muted)]">Share a sheet, add a script tag, mark up your HTML. No build step, no API keys, no backend. Anyone who can edit a spreadsheet can update the site.</p>
       <div class="mt-8 flex flex-wrap gap-3">
-        <a class="btn btn-primary" href="/view/">Try it with your sheet</a>
-        <a class="btn" href="${SITE.repo}">View on GitHub</a>
+        <a class="btn" href="/view/">Try it with your sheet</a>
+        <a class="btn btn-secondary" href="${SITE.repo}">View on GitHub</a>
       </div>
     </div>
     <div class="self-center">
-      <div class="card p-0 shadow-[6px_6px_0_var(--border)]">
+      <div class="card card-lg p-0 shadow-[6px_6px_0_var(--color-ink)]">
         <div class="flex items-center gap-2 border-b-2 border-[var(--border)] px-4 py-2 font-mono text-sm"><span class="cellref">fx</span><span class="text-[var(--muted)]">One line, then attributes</span></div>
         <pre class="overflow-x-auto p-4 font-mono text-[15px] leading-relaxed" id="install"><code>&lt;script src="${CDN(version)}"&gt;&lt;/script&gt;
 
@@ -119,14 +119,14 @@ export function home(version) {
   </div>`).join('')}
 </section>
 
-<section class="border-y-2 border-[var(--border)] bg-[var(--surface)] py-20" aria-labelledby="steps-h">
+<section class="scheme-purple bg-cells-purple py-20" aria-labelledby="steps-h">
   <div class="wrap">
     <span class="eyebrow"><span class="cellref">A3</span> Setup</span>
     <h2 id="steps-h" class="mt-3 text-4xl">It's as easy as 1, 2, 3</h2>
     <p class="mt-3 max-w-2xl text-[var(--muted)]">Basic setup takes a few minutes and very little code.</p>
     <ol class="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
       ${STEPS.map(([ref, title, text, extra]) => `<li class="card">
-        <span class="cellref text-green-dark dark:text-green-light">${ref}</span>
+        <span class="cellref text-green-dark">${ref}</span>
         <h3 class="mt-4 text-2xl">${title}</h3>
         <p class="mt-2 text-[var(--muted)]">${text}</p>${extra}
       </li>`).join('')}
@@ -134,7 +134,7 @@ export function home(version) {
   </div>
 </section>
 
-<section class="wrap py-20" aria-labelledby="where-h">
+<section class="scheme-black bg-cells py-20" aria-labelledby="where-h"><div class="wrap">
   <span class="eyebrow"><span class="cellref">A4</span> Platforms</span>
   <h2 id="where-h" class="mt-3 text-4xl">Works where you build</h2>
   <p class="mt-3 max-w-2xl text-[var(--muted)]">Pick your platform for copy-paste code. Replace YOUR_SHEET_URL with your sheet's address-bar URL.</p>
@@ -145,15 +145,16 @@ export function home(version) {
     <div class="relative"><pre class="code pr-24" id="platform-${key}-code"><code>${esc(code)}</code></pre>
       <button type="button" class="btn btn-sm absolute right-3 top-3" data-copy="#platform-${key}-code">Copy</button></div>
   </div>`).join('')}
+</div>
 </section>
 
-<section class="border-y-2 border-[var(--border)] bg-[var(--surface)] py-20" aria-labelledby="showcase-h">
+<section class="scheme-purple bg-cells-purple py-20" aria-labelledby="showcase-h">
   <div class="wrap">
     <span class="eyebrow"><span class="cellref">A5</span> Examples</span>
     <h2 id="showcase-h" class="mt-3 text-4xl">See it working</h2>
     <p class="mt-3 max-w-2xl text-[var(--muted)]">Two real sites run on cell2site, with no styling tricks. More copy-paste examples are on the <a href="/examples/">examples page</a>.</p>
     <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-      ${SHOWCASE.map(([tag, name, img, url, text]) => `<article class="card flex flex-col p-0 overflow-hidden">
+      ${SHOWCASE.map(([tag, name, img, url, text]) => `<article class="card card-lg flex flex-col p-0 overflow-hidden">
         <img src="${img}" alt="Screenshot of ${esc(name)}" width="500" height="280" loading="lazy" class="aspect-[16/9] w-full border-b-2 border-[var(--border)] object-cover object-top">
         <div class="flex flex-1 flex-col p-6">
           <span class="font-mono text-sm text-[var(--muted)]">${tag}</span>
@@ -166,7 +167,7 @@ export function home(version) {
   </div>
 </section>
 
-<section class="wrap py-20" aria-labelledby="facts-h">
+<section class="scheme-light py-20" aria-labelledby="facts-h"><div class="wrap">
   <span class="eyebrow"><span class="cellref">A6</span> Principles</span>
   <h2 id="facts-h" class="mt-3 text-4xl">Small on purpose</h2>
   <div class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -176,9 +177,10 @@ export function home(version) {
        ['One file, MIT', 'Plain JavaScript and no dependencies. Leaflet loads only on pages with a map.']]
       .map(([t, d]) => `<div class="border-l-4 border-green pl-4"><h3 class="font-sans text-lg font-bold">${t}</h3><p class="mt-1 text-[var(--muted)]">${d}</p></div>`).join('')}
   </div>
+</div>
 </section>
 
-<section class="border-t-2 border-[var(--border)] bg-[var(--surface)] py-20" aria-labelledby="uses-h">
+<section class="py-20" aria-labelledby="uses-h">
   <div class="wrap">
     <span class="eyebrow"><span class="cellref">A7</span> Use cases</span>
     <h2 id="uses-h" class="mt-3 text-4xl">Who runs a website from a sheet?</h2>
@@ -189,15 +191,15 @@ export function home(version) {
   </div>
 </section>
 
-<section class="bg-cells bg-cells-light border-t-2 border-[var(--border)] bg-purple text-white" aria-labelledby="coffee-h">
+<section class="scheme-black bg-cells" aria-labelledby="coffee-h">
   <div class="wrap flex flex-wrap items-center justify-between gap-8 py-16">
     <div class="max-w-xl">
       <h2 id="coffee-h" class="text-4xl">Did you find this useful?</h2>
-      <p class="mt-3 text-white/85">Consider buying me a cup of coffee, so I can stay awake long enough to build more cool stuff.</p>
+      <p class="mt-3 text-[var(--muted)]">Consider buying me a cup of coffee, so I can stay awake long enough to build more cool stuff.</p>
     </div>
     <div class="flex flex-wrap gap-3">
-      <a class="btn btn-on-color" href="${SITE.coffee}">Buy me a coffee</a>
-      <a class="btn btn-on-color" href="${SITE.repo}">Star on GitHub</a>
+      <a class="btn btn-sm" href="${SITE.coffee}">Buy me a coffee</a>
+      <a class="btn btn-sm btn-secondary" href="${SITE.repo}">Star on GitHub</a>
     </div>
   </div>
 </section>`,
