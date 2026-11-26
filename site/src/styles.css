@@ -62,6 +62,21 @@
   --surface: #1e1d1f; background-color: var(--color-ink); color: var(--fg); }
 .scheme-mint { --fg: var(--color-ink); --muted: var(--color-green-darker); --border: var(--color-ink); --accent: var(--color-green-dark); --grid-line: rgb(0 0 0 / 0.12);
   background-color: var(--color-green-lightest); color: var(--fg); }
+/* Inner pages open on a wash of the hero's soft green and grid, fading to white, so every page
+   carries the brand and not only the header and footer. */
+.page-wash { position: relative; isolation: isolate; }
+/* A layer of its own, masked to fade out: a background on main itself would repeat the grid down
+   the whole page. */
+.page-wash::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: 26rem; z-index: -1; pointer-events: none;
+  background-image:
+    linear-gradient(to right, transparent 101px, rgb(0 0 0 / 0.08) 101px),
+    linear-gradient(to bottom, transparent 19px, rgb(0 0 0 / 0.08) 19px),
+    linear-gradient(135deg, var(--color-green-lightest), #c4e3cf);
+  background-size: 102px 20px, 102px 20px, auto;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
 .scheme-light { background-image: linear-gradient(315deg, var(--color-line), #fff); }
 
 @layer base {
@@ -69,6 +84,8 @@
   body { font-family: var(--font-sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
   h1, h2, h3, h4 { font-family: var(--font-mono); font-weight: 400; letter-spacing: -0.01em; line-height: 1.15; }
   a { color: var(--accent); }
+  /* A link inside running text is underlined: colour alone does not tell it apart (WCAG 1.4.1). */
+  :where(p, li, td, dd, blockquote) a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   :focus-visible { outline: 2px solid var(--color-green); outline-offset: 2px; }
   ::selection { background: var(--color-green-lighter); color: var(--color-ink); }
 }
@@ -121,7 +138,8 @@
     box-shadow: inset 0 4px 0 0 rgb(255 255 255 / 0.2), inset 0 -5px 0 0 rgb(5 4 7 / 0.15), 0 2px 2px 0 rgb(5 4 7 / 0.15);
   }
   .btn:hover { box-shadow: inset 0 4px 0 0 rgb(255 255 255 / 0.2), inset 0 -5px 0 0 rgb(5 4 7 / 0.15), 0 4px 4px 0 rgb(5 4 7 / 0.15); }
-  .btn-primary { background: var(--color-green); color: #fff; }
+  /* The darker brand green: white on the base green is 3.3:1, under the 4.5:1 text needs. */
+  .btn-primary { background: var(--color-green-dark); color: #fff; }
   .btn-secondary { background: #f2f2f2; }
   .btn-sm { @apply px-5 py-2 text-sm; }
   .btn-on-color { }

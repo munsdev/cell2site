@@ -26,9 +26,27 @@ const ICON = {
 // with its own grid lines, so it only sits on the black header and footer.
 const LOGO = (size) => `<img src="/assets/cell2site-logo-white-500.png" srcset="/assets/cell2site-logo-white-500.png 500w, /assets/cell2site-logo-white.png 800w" sizes="200px" alt="cell2.site" width="800" height="313" class="${size} w-auto">`;
 
+// Search titles and descriptions, where a page's on-screen title is too short to say what it is.
+// The words are the ones people search with ("Google Sheets", "website", "map"); under 60 and 160
+// characters, so results show them whole.
+const META = {
+  '/docs/': ['cell2site docs: Google Sheets to lists, tabs and maps', 'How to put a Google Sheet on any website with cell2site: drop-in embeds, custom lists, search and filters, tabs, maps, the config sheet and every attribute.'],
+  '/changelog/': ['cell2site changelog: what changed in each release', 'Every cell2site release, newest first: new embeds, attributes and fixes, with the version to pin in your script tag.'],
+  '/docs/webflow/': ['Google Sheets in Webflow, step by step · cell2site', 'Connect a Google Sheet to a Webflow site without the CMS: where the cell2site script goes, and how to add the attributes in the Designer.'],
+  '/examples/': ['Google Sheets website examples: lists, tabs and maps', 'Live examples of Google Sheets on a website with cell2site: drop-in embeds, a custom list, tabs, a map, and a list with a map, each with code to copy.'],
+  '/examples/embed/': ['Embed a Google Sheet as cards, a list or a table', 'Show a Google Sheet on any website as cards, a list, a table or a map with one HTML element and no markup of your own. Live example with code to copy.'],
+  '/examples/list/': ['Google Sheets list in your own HTML · cell2site', 'Render a Google Sheet into your own HTML, with search, a filter, an item count and an empty state. Live example with code to copy.'],
+  '/examples/tabs/': ['Google Sheets tabs on a website · cell2site', 'Turn the tabs of a Google Sheet into website tabs, with labels, order and colours set in the sheet itself. Live example with code to copy.'],
+  '/examples/map/': ['Google Sheets map on a website · cell2site', 'Put the rows of a Google Sheet on a map on any website: popups, filters, search and "near me", on Leaflet. Live example with code to copy.'],
+  '/examples/list-and-map/': ['Google Sheets list and map together · cell2site', 'A list and a map from one Google Sheet on one page: click a card and the map flies to its marker. Live example with code to copy.'],
+  '/view/': ['Google Sheets viewer: see any sheet as a web page', 'Paste a Google Sheet link and see it as a list, cards, a table or a map, then share the link or copy the embed code. Nothing to install.'],
+};
+
 function head(p, asset) {
   const url = SITE.origin + p.path;
-  const title = p.path === '/' ? p.title : p.title + ' · cell2site';
+  const [metaTitle, metaDescription] = META[p.path] || [];
+  const title = metaTitle || (p.path === '/' ? p.title : p.title + ' · cell2site');
+  p = { ...p, description: metaDescription || p.description };
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -43,6 +61,12 @@ function head(p, asset) {
 <meta property="og:description" content="${esc(p.description)}">
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${SITE.origin}/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="cell2site: turn Google Sheets into live websites">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+${p.jsonld ? `<script type="application/ld+json">${JSON.stringify(p.jsonld).replace(/</g, '\\u003c')}</script>` : ''}
 <meta name="theme-color" content="#479e6a">
 <link rel="icon" href="${asset('/assets/favicon-32.png')}" type="image/png" sizes="32x32" media="(prefers-color-scheme: light)">
 <link rel="icon" href="${asset('/assets/favicon-32-dark.png')}" type="image/png" sizes="32x32" media="(prefers-color-scheme: dark)">
@@ -101,7 +125,7 @@ function footer() {
       '<button type="button" data-consent-open class="cursor-pointer text-white/80 hover:text-white hover:underline">Cookie settings</button>'])}
   </div>
   <div class="border-t border-white/15"><div class="wrap flex flex-wrap justify-between gap-2 py-5 text-sm text-white/60">
-    <span>© 2025–2026 Casey Muns · <a href="https://muns.dev" class="text-white/60">muns.dev</a></span>
+    <span>© 2025–2026 Casey Muns · <a href="https://muns.dev" class="inline-block py-1 text-white/60">muns.dev</a></span>
     <span>No analytics. No tracking cookies.</span>
   </div></div>
 </footer>`;
@@ -123,7 +147,7 @@ function consentBanner() {
     <div class="mt-4 grid grid-cols-2 gap-2">
       <button type="button" class="btn btn-sm" data-consent="reject">Reject</button>
       <button type="button" class="btn btn-sm" data-consent="accept">Accept</button>
-      <button type="button" class="col-span-2 text-sm text-[var(--muted)] underline" data-consent="settings">Settings</button>
+      <button type="button" class="col-span-2 py-2 text-sm text-[var(--muted)] underline" data-consent="settings">Settings</button>
       <button type="button" hidden class="btn btn-sm col-span-2" data-consent="save">Save choice</button>
     </div>
   </div>
@@ -146,7 +170,7 @@ export function page(p, asset) {
   return `${head(p, asset)}
 <body class="${p.bodyClass || ''} flex min-h-screen flex-col">
 ${header(p)}
-<main id="main" class="flex-1">
+<main id="main" class="flex-1 ${p.path === '/' ? '' : 'page-wash'}">
 ${p.body}
 </main>
 ${footer()}

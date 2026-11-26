@@ -38,23 +38,30 @@ function renderMarkdown(source) {
       },
     },
   });
-  return { html: md.parse(source), toc };
+  // Code blocks and tables scroll sideways on phones: tabindex lets a keyboard reach and scroll them.
+  return { html: md.parse(source).replace(/<pre>/g, '<pre tabindex="0">').replace(/<table>/g, '<table tabindex="0">'), toc };
 }
 
 function docPage({ path, title, description, file, lead }) {
   const { html, toc } = renderMarkdown(readFileSync(file, 'utf8'));
+  const tocNav = (cls) => `<nav aria-label="On this page" class="text-[15px] ${cls}">
+      ${cls ? '<p class="mb-2 font-mono text-sm uppercase tracking-wider text-[var(--muted)]">On this page</p>' : ''}
+      <ul class="grid grid-cols-1 gap-1 border-l-2 border-[var(--line)]">
+        ${toc.map(([id, text]) => `<li><a href="#${id}" class="-ml-0.5 block border-l-2 border-transparent py-1 pl-3 text-[var(--muted)] no-underline hover:border-green hover:text-[var(--fg)]">${esc(text)}</a></li>`).join('')}
+      </ul>
+      <a href="${SITE.repo}/blob/main/${file.split('/cell2site/').pop()}" class="mt-6 inline-block py-1 text-sm">Edit this page on GitHub</a>
+    </nav>`;
   return {
     path, title, description,
     body: `
 <div class="wrap grid grid-cols-1 gap-10 py-14 lg:grid-cols-[15rem_minmax(0,1fr)]">
   <aside class="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto">
-    <nav aria-label="On this page" class="text-[15px]">
-      <p class="mb-2 font-mono text-sm uppercase tracking-wider text-[var(--muted)]">On this page</p>
-      <ul class="grid grid-cols-1 gap-1 border-l-2 border-[var(--line)]">
-        ${toc.map(([id, text]) => `<li><a href="#${id}" class="-ml-0.5 block border-l-2 border-transparent py-0.5 pl-3 text-[var(--muted)] no-underline hover:border-green hover:text-[var(--fg)]">${esc(text)}</a></li>`).join('')}
-      </ul>
-      <a href="${SITE.repo}/blob/main/${file.split('/cell2site/').pop()}" class="mt-6 inline-block text-sm">Edit this page on GitHub</a>
-    </nav>
+    ${tocNav('hidden lg:block')}
+    <!-- On a phone the contents fold away, or they push the page itself 800px down. -->
+    <details class="card lg:hidden">
+      <summary class="cursor-pointer py-2 font-mono text-sm uppercase tracking-wider">On this page</summary>
+      <div class="mt-3">${tocNav('')}</div>
+    </details>
   </aside>
   <article class="prose min-w-0">${lead || ''}${html}</article>
 </div>`,
@@ -87,7 +94,7 @@ function examplePage(root, [key, title, description]) {
       <a class="btn btn-sm" href="${SITE.repo}/blob/main/site/examples/${key}.html">On GitHub</a></div>
   </div>
   <p class="mt-2 text-[var(--muted)]">Paste it into your page, with the script tag once before <code>&lt;/body&gt;</code>.</p>
-  <pre class="code mt-4" id="code"><code>${esc(code)}</code></pre>
+  <pre tabindex="0" class="code mt-4" id="code"><code>${esc(code)}</code></pre>
 </div>`,
   };
 }
@@ -102,7 +109,7 @@ function examplesIndex() {
   <p class="mt-3 max-w-2xl text-lg text-[var(--muted)]">Each example runs live against the <a href="${SITE.demoSheet}">public demo sheet</a>, with its code underneath to copy.</p>
   <ul class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
     ${EXAMPLES.map(([key, title, description], i) => `<li><a href="/examples/${key}/" class="card group block h-full text-[var(--fg)] no-underline hover:shadow-[4px_4px_0_var(--border)]">
-      <span class="cellref text-green-dark">B${i + 2}</span>
+      <span class="cellref text-green-darker">B${i + 2}</span>
       <h2 class="mt-3 text-2xl group-hover:underline">${esc(title)}</h2>
       <p class="mt-1 text-[var(--muted)]">${esc(description)}</p></a></li>`).join('')}
     <li><a href="/docs/webflow/" class="card group block h-full text-[var(--fg)] no-underline hover:shadow-[4px_4px_0_var(--border)]">
@@ -228,7 +235,7 @@ function cookies() {
   return legal('/cookies/', 'Cookies and storage', 'Every cookie, storage key and outside service cell2site.com uses.', `
 <p>cell2site.com sets <b>no cookies</b>. It uses your browser's local storage for the two items below marked "This site", and loads outside services only in the "External media" category, after you allow it.</p>
 <p><button type="button" data-consent-open class="btn btn-sm">Change your choice</button></p>
-<table><thead><tr><th>What</th><th>Provider</th><th>Category</th><th>Stored</th><th>Kept</th></tr></thead>
+<table tabindex="0"><thead><tr><th>What</th><th>Provider</th><th>Category</th><th>Stored</th><th>Kept</th></tr></thead>
 <tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>
 <p>Details, legal bases and your rights are in the <a href="/privacy/">privacy policy</a>.</p>`);
 }

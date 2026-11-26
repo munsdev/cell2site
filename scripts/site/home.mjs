@@ -81,9 +81,25 @@ export function home(version) {
     title: 'cell2site: turn Google Sheets into live websites',
     description: 'Turn a Google Sheet into lists, cards, tables and maps on any website. One script tag, no server, no API key. Free and open source.',
     scripts: ['/assets/home.js'],
+    // Structured data: what cell2site is, for search results and link previews.
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'WebSite', '@id': SITE.origin + '/#website', url: SITE.origin + '/', name: 'cell2site',
+          publisher: { '@id': SITE.origin + '/#casey' } },
+        { '@type': 'Person', '@id': SITE.origin + '/#casey', name: 'Casey Muns', url: 'https://muns.dev' },
+        { '@type': 'SoftwareApplication', name: 'cell2site', url: SITE.origin + '/',
+          description: 'Turn a Google Sheet into lists, cards, tables and maps on any website. One script tag, no server, no API key.',
+          applicationCategory: 'DeveloperApplication', operatingSystem: 'Any (web browser)',
+          softwareVersion: version, license: 'https://opensource.org/licenses/MIT',
+          codeRepository: SITE.repo, downloadUrl: CDN(version), image: SITE.origin + '/assets/og.png',
+          author: { '@id': SITE.origin + '/#casey' },
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } },
+      ],
+    },
     body: `
 <section class="scheme-mint bg-cells-mint relative overflow-hidden">
-  <div class="wrap grid grid-cols-1 gap-12 py-20 lg:grid-cols-[1.1fr_1fr] lg:py-28">
+  <div class="wrap grid grid-cols-1 gap-12 py-20 lg:grid-cols-[1.3fr_minmax(0,1fr)] lg:py-28">
     <div>
       <span class="eyebrow"><span class="cellref">A1</span> Open source · MIT</span>
       <h1 class="mt-5 text-5xl sm:text-6xl">Turn Google Sheets into live websites</h1>
@@ -96,7 +112,7 @@ export function home(version) {
     <div class="self-center">
       <div class="card card-lg p-0 shadow-[6px_6px_0_var(--color-ink)]">
         <div class="flex items-center gap-2 border-b-2 border-[var(--border)] px-4 py-2 font-mono text-sm"><span class="cellref">fx</span><span class="text-[var(--muted)]">One line, then attributes</span></div>
-        <pre class="overflow-x-auto p-4 font-mono text-[15px] leading-relaxed" id="install"><code>&lt;script src="${CDN(version)}"&gt;&lt;/script&gt;
+        <pre tabindex="0" class="overflow-x-auto p-4 font-mono text-[15px] leading-relaxed" id="install"><code>&lt;script src="${CDN(version)}"&gt;&lt;/script&gt;
 
 &lt;div data-cell2-embed="cards"
      data-cell2-id="YOUR_SHEET_URL"&gt;&lt;/div&gt;</code></pre>
@@ -115,7 +131,7 @@ export function home(version) {
   <div id="demo-${key}-panel" role="tabpanel" aria-labelledby="demo-${key}" ${i ? 'hidden' : ''} class="mt-5 grid grid-cols-1 gap-4">
     <div class="card min-h-72 p-4 sm:p-6">${gate('Live ' + key + ' demo')}<div data-ext data-demo="${key}"></div></div>
     <div class="flex items-center justify-between"><span class="text-sm text-[var(--muted)]">The code for this view</span><button type="button" class="btn btn-sm" data-copy="#demo-${key}-code">Copy</button></div>
-    <pre class="code" id="demo-${key}-code"><code>${esc(code)}</code></pre>
+    <pre tabindex="0" class="code" id="demo-${key}-code"><code>${esc(code)}</code></pre>
   </div>`).join('')}
 </section>
 
@@ -126,7 +142,7 @@ export function home(version) {
     <p class="mt-3 max-w-2xl text-[var(--muted)]">Basic setup takes a few minutes and very little code.</p>
     <ol class="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
       ${STEPS.map(([ref, title, text, extra]) => `<li class="card">
-        <span class="cellref text-green-dark">${ref}</span>
+        <span class="cellref text-green-darker">${ref}</span>
         <h3 class="mt-4 text-2xl">${title}</h3>
         <p class="mt-2 text-[var(--muted)]">${text}</p>${extra}
       </li>`).join('')}
@@ -142,7 +158,7 @@ export function home(version) {
   ${PLATFORMS(version).map(([key, , text, code], i) => `
   <div id="platform-${key}-panel" role="tabpanel" aria-labelledby="platform-${key}" ${i ? 'hidden' : ''} class="mt-5 grid grid-cols-1 gap-4">
     <p class="text-[var(--muted)]">${esc(text)}</p>
-    <div class="relative"><pre class="code pr-24" id="platform-${key}-code"><code>${esc(code)}</code></pre>
+    <div class="relative"><pre tabindex="0" class="code pr-24" id="platform-${key}-code"><code>${esc(code)}</code></pre>
       <button type="button" class="btn btn-sm absolute right-3 top-3" data-copy="#platform-${key}-code">Copy</button></div>
   </div>`).join('')}
 </div>

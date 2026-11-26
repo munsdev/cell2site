@@ -42,16 +42,26 @@ const asset = (url) => {
   hashes[url] = hashes[url] || createHash('sha256').update(readFileSync(join(dist, url))).digest('hex').slice(0, 10);
   return url + '?v=' + hashes[url];
 };
-for (const p of [home(SITE.version), ...pages(root)]) {
+const all = [home(SITE.version), ...pages(root)];
+for (const p of all) {
   const file = join(dist, p.path.endsWith('/') ? p.path + 'index.html' : p.path);
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, page(p, asset));
 }
 
+// Sitemap and robots.txt: every indexable page, on the canonical domain only.
+writeFileSync(join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${all.filter((p) => !p.noindex).map((p) => `  <url><loc>${SITE.origin}${p.path}</loc></url>`).join('\n')}
+</urlset>
+`);
+writeFileSync(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE.origin}/sitemap.xml\n`);
+
 // 4. The Worker.
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
-const TEXT = ['.html', '.css', '.js', '.svg'];
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2',
+  '.xml': 'application/xml; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
+const TEXT = ['.html', '.css', '.js', '.svg', '.xml', '.txt'];
 const files = {};
 (function walk(dir) {
   for (const name of readdirSync(dir)) {
@@ -100,8 +110,11 @@ export default {
     const found = FILES[path.endsWith('/') ? path + 'index.html' : path];
     const [type, binary, body] = found || FILES['/404.html'];
     // Versioned asset URLs are immutable; pages revalidate, so a deploy shows at once.
+    // no-transform on pages: Cloudflare then injects nothing into them, so its Web Analytics
+    // beacon cannot appear on a site that promises no analytics, whatever the zone setting says.
     const cache = url.searchParams.has('v') ? 'public, max-age=31536000, immutable'
-      : path.startsWith('/assets/fonts/') ? 'public, max-age=2592000' : 'no-cache';
+      : path.startsWith('/assets/fonts/') ? 'public, max-age=2592000'
+      : type.startsWith('text/html') ? 'no-cache, no-transform' : 'no-cache';
     return new Response(request.method === 'HEAD' ? null : binary ? bytes(body) : body, {
       status: found ? 200 : 404,
       headers: Object.assign({ 'content-type': type, 'cache-control': cache }, HEADERS),
