@@ -19,9 +19,12 @@ const NAV = [
 
 const ICON = {
   github: '<svg aria-hidden="true" viewBox="0 0 16 16" class="size-5" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/></svg>',
-  logo: '<svg aria-hidden="true" viewBox="0 0 32 32" class="size-7"><rect x="1" y="1" width="30" height="30" rx="5" fill="#479e6a" stroke="currentColor" stroke-width="2"/><path d="M1 11h30M11 1v30" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="10" height="10" fill="#fff" stroke="currentColor" stroke-width="2"/></svg>',
   external: '<svg aria-hidden="true" viewBox="0 0 16 16" class="size-3.5" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3H3v10h10v-3M9 2h5v5M14 2 7 9"/></svg>',
 };
+
+// Casey's cell2.site wordmark and C2S icon, from the original Webflow site. The wordmark is white
+// with its own grid lines, so it only sits on the black header and footer.
+const LOGO = (size) => `<img src="/assets/cell2site-logo-white-500.png" srcset="/assets/cell2site-logo-white-500.png 500w, /assets/cell2site-logo-white.png 800w" sizes="200px" alt="cell2.site" width="800" height="313" class="${size} w-auto">`;
 
 function head(p, asset) {
   const url = SITE.origin + p.path;
@@ -41,7 +44,11 @@ function head(p, asset) {
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${SITE.origin}/assets/og.png">
 <meta name="theme-color" content="#479e6a">
-<link rel="icon" href="${asset('/assets/favicon.svg')}" type="image/svg+xml">
+<link rel="icon" href="${asset('/assets/favicon-32.png')}" type="image/png" sizes="32x32" media="(prefers-color-scheme: light)">
+<link rel="icon" href="${asset('/assets/favicon-32-dark.png')}" type="image/png" sizes="32x32" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="${asset('/assets/favicon-48.png')}" type="image/png" sizes="48x48">
+<link rel="icon" href="${asset('/assets/icon-192.png')}" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="${asset('/assets/apple-touch-icon.png')}" sizes="180x180">
 <link rel="preload" href="/assets/fonts/ubuntu-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/ubuntu-mono-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${asset('/assets/site.css')}">
@@ -61,7 +68,7 @@ function header(p) {
 <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:bg-[var(--bg)] focus:px-3 focus:py-2">Skip to content</a>
 <header data-chrome class="scheme-black sticky top-0 z-40">
   <div class="wrap flex h-16 items-center justify-between gap-4">
-    <a href="/" class="flex items-center gap-2.5 font-mono text-xl text-[var(--fg)] no-underline">${ICON.logo}<span>cell<span class="text-green">2</span>site</span></a>
+    <a href="/" class="block shrink-0">${LOGO('h-14')}</a>
     <nav aria-label="Main" class="hidden items-center gap-1 md:flex">
       ${NAV.map(link).join('')}
       <a href="${SITE.repo}" class="btn btn-sm ml-3">${ICON.github}<span>GitHub</span></a>
@@ -85,7 +92,7 @@ function footer() {
 <footer data-chrome class="scheme-black">
   <div class="wrap grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
     <div class="max-w-xs">
-      <a href="/" class="flex items-center gap-2.5 font-mono text-xl text-white no-underline">${ICON.logo}<span>cell<span class="text-green-light">2</span>site</span></a>
+      <a href="/" class="block w-fit">${LOGO('h-16')}</a>
       <p class="mt-3 text-white/70">Google Sheets on any website. Free and open source under the MIT licence.</p>
     </div>
     ${col('Product', [a('/docs/', 'Docs'), a('/examples/', 'Examples'), a('/view/', 'Viewer'), a('/changelog/', 'Changelog')])}
