@@ -82,14 +82,14 @@ export function home(version) {
     description: 'Turn a Google Sheet into lists, cards, tables and maps on any website. One script tag, no server, no API key. Free and open source.',
     scripts: ['/assets/home.js'],
     body: `
-<section class="scheme-green bg-cells-green relative overflow-hidden">
+<section class="scheme-mint bg-cells-mint relative overflow-hidden">
   <div class="wrap grid grid-cols-1 gap-12 py-20 lg:grid-cols-[1.1fr_1fr] lg:py-28">
     <div>
       <span class="eyebrow"><span class="cellref">A1</span> Open source · MIT</span>
       <h1 class="mt-5 text-5xl sm:text-6xl">Turn Google Sheets into live websites</h1>
       <p class="mt-6 max-w-xl text-lg text-[var(--muted)]">Share a sheet, add a script tag, mark up your HTML. No build step, no API keys, no backend. Anyone who can edit a spreadsheet can update the site.</p>
       <div class="mt-8 flex flex-wrap gap-3">
-        <a class="btn" href="/view/">Try it with your sheet</a>
+        <a class="btn btn-primary" href="/view/">Try it with your sheet</a>
         <a class="btn btn-secondary" href="${SITE.repo}">View on GitHub</a>
       </div>
     </div>
@@ -134,7 +134,7 @@ export function home(version) {
   </div>
 </section>
 
-<section class="scheme-black bg-cells py-20" aria-labelledby="where-h"><div class="wrap">
+<section class="scheme-black py-20" aria-labelledby="where-h"><div class="wrap">
   <span class="eyebrow"><span class="cellref">A4</span> Platforms</span>
   <h2 id="where-h" class="mt-3 text-4xl">Works where you build</h2>
   <p class="mt-3 max-w-2xl text-[var(--muted)]">Pick your platform for copy-paste code. Replace YOUR_SHEET_URL with your sheet's address-bar URL.</p>
@@ -191,7 +191,7 @@ export function home(version) {
   </div>
 </section>
 
-<section class="scheme-black bg-cells" aria-labelledby="coffee-h">
+<section class="scheme-black" aria-labelledby="coffee-h">
   <div class="wrap flex flex-wrap items-center justify-between gap-8 py-16">
     <div class="max-w-xl">
       <h2 id="coffee-h" class="text-4xl">Did you find this useful?</h2>

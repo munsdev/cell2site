@@ -60,6 +60,8 @@
   background-color: var(--color-purple); color: var(--fg); }
 .scheme-black { --bg: var(--color-ink); --fg: #fff; --muted: rgb(255 255 255 / 0.75); --border: #fff; --accent: var(--color-green-light); --grid-line: rgb(255 255 255 / 0.18);
   --surface: #1e1d1f; background-color: var(--color-ink); color: var(--fg); }
+.scheme-mint { --fg: var(--color-ink); --muted: var(--color-green-darker); --border: var(--color-ink); --accent: var(--color-green-dark); --grid-line: rgb(0 0 0 / 0.12);
+  background-color: var(--color-green-lightest); color: var(--fg); }
 .scheme-light { background-image: linear-gradient(315deg, var(--color-line), #fff); }
 
 @layer base {
@@ -85,6 +87,14 @@
     linear-gradient(to right, transparent 101px, var(--grid-line) 101px),
     linear-gradient(to bottom, transparent 19px, var(--grid-line) 19px);
   background-size: auto, 102px 20px, 102px 20px;
+}
+/* The hero: white fading to a soft green, under the cell grid — the look of the link preview. */
+@utility bg-cells-mint {
+  background-image:
+    linear-gradient(to right, transparent 101px, var(--grid-line) 101px),
+    linear-gradient(to bottom, transparent 19px, var(--grid-line) 19px),
+    linear-gradient(135deg, var(--color-green-lightest), #9bcfae);
+  background-size: 102px 20px, 102px 20px, auto;
 }
 @utility bg-cells-green {
   background-image:
